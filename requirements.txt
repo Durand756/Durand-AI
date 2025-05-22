@@ -1,26 +1,17 @@
-# Requirements pour Render GRATUIT (512MB RAM max)
-# Version ultra-légère, pas de PyTorch/TensorFlow !
-
-# Framework web minimaliste
-Flask==2.3.3
-Flask-CORS==4.0.0
-gunicorn==21.2.0
-
-# Traitement d'images léger
-Pillow==10.0.1
-numpy==1.24.4
-
-# Requests pour APIs
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+torch==2.1.0
+torchvision==0.16.0
+diffusers==0.24.0
+transformers==4.35.2
+accelerate==0.24.1
+safetensors==0.4.0
+Pillow==10.1.0
+numpy==1.24.3
+scipy==1.11.4
+ftfy==6.1.1
+regex==2023.10.3
 requests==2.31.0
-
-# OpenAI (léger)
-openai==1.3.7
-
-# Pas de replicate package (on utilise l'API REST directement)
-# Pas de torch/diffusers (trop lourd pour Render gratuit)
-# Pas de transformers (512MB RAM insuffisante)
-
-# Utilitaires légers seulement
-python-dotenv==1.0.0
-
-# C'est tout ! Render gratuit = minimaliste obligatoire
+pydantic==2.5.0
+python-multipart==0.0.6
+huggingface-hub==0.19.4
