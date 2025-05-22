@@ -12,7 +12,7 @@ import uvicorn
 from typing import Optional
 import logging
 import time
-
+ 
 # Configuration des logs
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
