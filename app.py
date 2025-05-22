@@ -1,314 +1,436 @@
-from flask import Flask, render_template, request, jsonify, send_file
-from flask_cors import CORS
-import requests
+#!/usr/bin/env python3
+"""
+Générateur d'Images AI Ultra-Réalistes - Version Production
+Optimisé pour le déploiement sur Render.com
+"""
+
+import os
 import io
 import base64
-import os
-import uuid
-from datetime import datetime
-import logging
-from PIL import Image, ImageDraw, ImageFont
 import json
-import time
+import uuid
+import logging
+from datetime import datetime
+from flask import Flask, render_template_string, request, jsonify
+from flask_cors import CORS
 
-# Configuration du logging
-logging.basicConfig(level=logging.INFO)
+# Configuration du logging pour production
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
+# Initialisation de l'application Flask
 app = Flask(__name__)
 CORS(app)
 
-# Configuration
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-UPLOAD_FOLDER = 'generated_images'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# Configuration de l'application
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
 
-class SimpleAIImageGenerator:
-    def __init__(self):
-        self.hf_token = os.environ.get('HF_TOKEN', '')
-        self.api_urls = [
-            "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
-            "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1",
-            "https://api-inference.huggingface.co/models/dreamlike-art/dreamlike-diffusion-1.0"
-        ]
-        
-    def generate_image(self, prompt, negative_prompt="", width=512, height=512, **kwargs):
-        """Génération d'image via API Hugging Face"""
-        
-        # Amélioration du prompt
-        enhanced_prompt = f"{prompt}, high quality, detailed, masterpiece"
-        if negative_prompt:
-            negative_prompt += ", blurry, low quality, distorted, ugly"
-        else:
-            negative_prompt = "blurry, low quality, distorted, ugly, bad anatomy"
-        
-        # Tentative avec différentes APIs
-        for api_url in self.api_urls:
-            try:
-                logger.info(f"Tentative avec: {api_url}")
-                
-                headers = {"Content-Type": "application/json"}
-                if self.hf_token:
-                    headers["Authorization"] = f"Bearer {self.hf_token}"
-                
-                # Payload simple pour éviter les erreurs
-                payload = {
-                    "inputs": enhanced_prompt
-                }
-                
-                # Si le modèle supporte les paramètres avancés
-                if "stable-diffusion-v1-5" in api_url or "stable-diffusion-2" in api_url:
-                    payload["parameters"] = {
-                        "negative_prompt": negative_prompt,
-                        "num_inference_steps": min(kwargs.get('steps', 20), 25),
-                        "guidance_scale": kwargs.get('guidance', 7.5)
-                    }
-                
-                response = requests.post(
-                    api_url, 
-                    headers=headers, 
-                    json=payload, 
-                    timeout=60
-                )
-                
-                if response.status_code == 200:
-                    try:
-                        image = Image.open(io.BytesIO(response.content))
-                        # Redimensionner si nécessaire
-                        if image.size != (width, height):
-                            image = image.resize((width, height), Image.Resampling.LANCZOS)
-                        logger.info(f"Image générée avec succès via {api_url}")
-                        return image
-                    except Exception as e:
-                        logger.error(f"Erreur traitement image: {str(e)}")
-                        continue
-                        
-                elif response.status_code == 503:
-                    logger.warning(f"Modèle en cours de chargement: {api_url}")
-                    # Attendre un peu et continuer avec le prochain modèle
-                    time.sleep(2)
-                    continue
-                else:
-                    logger.warning(f"Erreur API {response.status_code}: {response.text}")
-                    continue
-                    
-            except requests.exceptions.Timeout:
-                logger.warning(f"Timeout pour {api_url}")
-                continue
-            except Exception as e:
-                logger.error(f"Erreur {api_url}: {str(e)}")
-                continue
-        
-        # Si toutes les APIs échouent, générer une image placeholder
-        logger.warning("Toutes les APIs ont échoué, génération d'un placeholder")
-        return self.create_placeholder_image(prompt, width, height)
+class ProductionImageGenerator:
+    """Générateur d'images optimisé pour la production"""
     
-    def create_placeholder_image(self, prompt, width=512, height=512):
-        """Crée une image placeholder avec le texte du prompt"""
+    def __init__(self):
+        self.device = "cpu"  # Force CPU pour Render
+        self.pipeline = None
+        self.model_loaded = False
+        self.is_loading = False
+        logger.info("Initialisation du générateur en mode production")
         
-        # Couleurs gradient
-        colors = [
-            (102, 126, 234),  # Bleu
-            (118, 75, 162),   # Violet
-            (240, 147, 251)   # Rose
-        ]
-        
-        # Création de l'image avec gradient
-        image = Image.new('RGB', (width, height), colors[0])
+    def load_model_lazy(self):
+        """Charge le modèle de façon paresseuse (au premier appel)"""
+        if self.model_loaded or self.is_loading:
+            return
+            
+        self.is_loading = True
+        logger.info("Chargement du modèle Stable Diffusion...")
         
         try:
-            draw = ImageDraw.Draw(image)
+            # Import dynamique pour éviter les erreurs au startup
+            import torch
+            from diffusers import StableDiffusionPipeline, DPMSolverMultistepScheduler
             
-            # Créer un effet de gradient simple
-            for y in range(height):
-                ratio = y / height
-                r = int(colors[0][0] + (colors[1][0] - colors[0][0]) * ratio)
-                g = int(colors[0][1] + (colors[1][1] - colors[0][1]) * ratio)
-                b = int(colors[0][2] + (colors[1][2] - colors[0][2]) * ratio)
-                draw.line([(0, y), (width, y)], fill=(r, g, b))
+            # Modèle optimisé pour CPU
+            model_id = "runwayml/stable-diffusion-v1-5"
             
-            # Ajouter le texte
-            text_lines = [
-                "🎨 Image générée par IA",
-                "",
-                f"Prompt: {prompt[:40]}{'...' if len(prompt) > 40 else ''}",
-                "",
-                "Générateur AI - Render"
-            ]
+            self.pipeline = StableDiffusionPipeline.from_pretrained(
+                model_id,
+                torch_dtype=torch.float32,  # CPU nécessite float32
+                safety_checker=None,
+                requires_safety_checker=False,
+                use_safetensors=True
+            )
             
-            # Police par défaut
-            try:
-                font_large = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
-                font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16)
-            except:
-                font_large = ImageFont.load_default()
-                font_small = ImageFont.load_default()
+            # Optimisation pour CPU
+            self.pipeline.scheduler = DPMSolverMultistepScheduler.from_config(
+                self.pipeline.scheduler.config
+            )
             
-            # Calcul de la position du texte
-            y_offset = height // 2 - (len(text_lines) * 30) // 2
+            # Optimisations mémoire pour CPU
+            self.pipeline.enable_attention_slicing()
+            self.pipeline.enable_sequential_cpu_offload()
             
-            for i, line in enumerate(text_lines):
-                if line:  # Skip empty lines
-                    font = font_large if i == 0 else font_small
-                    bbox = draw.textbbox((0, 0), line, font=font)
-                    text_width = bbox[2] - bbox[0]
-                    x = (width - text_width) // 2
-                    y = y_offset + i * 30
-                    
-                    # Ombre
-                    draw.text((x+1, y+1), line, fill=(0, 0, 0, 128), font=font)
-                    # Texte principal
-                    draw.text((x, y), line, fill='white', font=font)
+            self.model_loaded = True
+            logger.info("Modèle chargé avec succès en mode CPU")
             
         except Exception as e:
-            logger.error(f"Erreur création placeholder: {str(e)}")
+            logger.error(f"Erreur lors du chargement du modèle: {e}")
+            self.model_loaded = False
+        finally:
+            self.is_loading = False
+    
+    def generate_image(self, prompt, negative_prompt="", width=512, height=512, 
+                      num_inference_steps=20, guidance_scale=7.5, seed=None):
+        """Génère une image avec paramètres optimisés pour CPU"""
         
-        return image
+        # Chargement paresseux du modèle
+        if not self.model_loaded:
+            self.load_model_lazy()
+            
+        if not self.model_loaded:
+            raise Exception("Modèle non disponible")
+        
+        try:
+            import torch
+            
+            # Prompt optimisé
+            enhanced_prompt = f"{prompt}, high quality, detailed"
+            enhanced_negative = f"{negative_prompt}, low quality, blurry, distorted" if negative_prompt else "low quality, blurry"
+            
+            # Générateur pour reproductibilité
+            generator = None
+            if seed is not None:
+                generator = torch.Generator().manual_seed(seed)
+            
+            # Génération avec paramètres optimisés CPU
+            logger.info(f"Génération d'image: {prompt[:50]}...")
+            
+            with torch.no_grad():
+                result = self.pipeline(
+                    prompt=enhanced_prompt,
+                    negative_prompt=enhanced_negative,
+                    width=min(width, 512),  # Limiter pour CPU
+                    height=min(height, 512),
+                    num_inference_steps=min(num_inference_steps, 30),  # Limiter steps
+                    guidance_scale=guidance_scale,
+                    generator=generator
+                )
+            
+            return result.images[0]
+            
+        except Exception as e:
+            logger.error(f"Erreur génération: {e}")
+            raise
 
-# Instance globale
-generator = SimpleAIImageGenerator()
+# Instance globale du générateur
+image_generator = ProductionImageGenerator()
+
+# Template HTML intégré (pour éviter les problèmes de fichiers)
+HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur d'Images AI - Production</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .container {
+            max-width: 1000px; margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px; padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center; margin-bottom: 30px;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white; padding: 30px; margin: -30px -30px 30px -30px;
+            border-radius: 20px 20px 0 0;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; font-weight: 300; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 12px; border: 2px solid #e1e8ed;
+            border-radius: 8px; font-size: 14px; transition: all 0.3s ease;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none; border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .generate-btn {
+            width: 100%; padding: 15px;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white; border: none; border-radius: 10px;
+            font-size: 16px; font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .generate-btn:hover { transform: translateY(-2px); }
+        .generate-btn:disabled { background: #95a5a6; cursor: not-allowed; transform: none; }
+        .image-container {
+            margin-top: 30px; text-align: center;
+            border: 2px dashed #d1d8e0; border-radius: 15px;
+            padding: 30px; min-height: 300px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .generated-image { max-width: 100%; border-radius: 10px; }
+        .loading { display: none; }
+        .loading.show { display: block; }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db; border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .status { padding: 10px; border-radius: 6px; margin-bottom: 20px; text-align: center; }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+            .header h1 { font-size: 2em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Générateur d'Images AI</h1>
+            <p>Version Production - Render.com</p>
+        </div>
+
+        <div id="status" class="status" style="display: none;"></div>
+
+        <form id="generateForm">
+            <div class="form-group">
+                <label for="prompt">Description de l'image ✨</label>
+                <textarea id="prompt" rows="3" placeholder="Décrivez l'image que vous souhaitez générer..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="negativePrompt">Éléments à éviter (optionnel)</label>
+                <textarea id="negativePrompt" rows="2" placeholder="Ex: flou, basse qualité, déformé..."></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="width">Largeur</label>
+                    <select id="width">
+                        <option value="256">256px (Rapide)</option>
+                        <option value="512" selected>512px (Standard)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="height">Hauteur</label>
+                    <select id="height">
+                        <option value="256">256px (Rapide)</option>
+                        <option value="512" selected>512px (Standard)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="steps">Étapes de génération</label>
+                    <select id="steps">
+                        <option value="10">10 (Ultra rapide)</option>
+                        <option value="15">15 (Rapide)</option>
+                        <option value="20" selected>20 (Standard)</option>
+                        <option value="25">25 (Qualité)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="seed">Seed (optionnel)</label>
+                    <input type="number" id="seed" placeholder="Aléatoire">
+                </div>
+            </div>
+
+            <button type="submit" class="generate-btn" id="generateBtn">
+                <span class="btn-text">Générer l'Image 🚀</span>
+            </button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px;">Génération en cours... Cela peut prendre 1-2 minutes</p>
+        </div>
+
+        <div class="image-container" id="imageContainer">
+            <div>
+                <div style="font-size: 48px; margin-bottom: 10px;">🎨</div>
+                <div>Votre image générée apparaîtra ici</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('generateForm');
+        const statusDiv = document.getElementById('status');
+        const loadingDiv = document.getElementById('loading');
+        const imageContainer = document.getElementById('imageContainer');
+        const generateBtn = document.getElementById('generateBtn');
+
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            setTimeout(() => statusDiv.style.display = 'none', 5000);
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const prompt = document.getElementById('prompt').value.trim();
+            if (!prompt) {
+                showStatus('Veuillez entrer une description', 'error');
+                return;
+            }
+
+            generateBtn.disabled = true;
+            loadingDiv.classList.add('show');
+            showStatus('Génération en cours...', 'info');
+
+            const params = {
+                prompt: prompt,
+                negative_prompt: document.getElementById('negativePrompt').value,
+                width: parseInt(document.getElementById('width').value),
+                height: parseInt(document.getElementById('height').value),
+                num_inference_steps: parseInt(document.getElementById('steps').value),
+                seed: document.getElementById('seed').value ? parseInt(document.getElementById('seed').value) : null
+            };
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(params)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    imageContainer.innerHTML = `<img src="${result.image}" alt="Generated" class="generated-image">`;
+                    showStatus('Image générée avec succès!', 'success');
+                } else {
+                    throw new Error(result.error || 'Erreur de génération');
+                }
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                showStatus(`Erreur: ${error.message}`, 'error');
+                imageContainer.innerHTML = `
+                    <div>
+                        <div style="font-size: 48px; margin-bottom: 10px;">❌</div>
+                        <div>Erreur de génération</div>
+                    </div>
+                `;
+            } finally {
+                generateBtn.disabled = false;
+                loadingDiv.classList.remove('show');
+            }
+        });
+
+        // Vérifier le statut au chargement
+        fetch('/api/status')
+            .then(r => r.json())
+            .then(data => {
+                if (data.model_loaded) {
+                    showStatus('Modèle prêt!', 'success');
+                } else {
+                    showStatus('Modèle en cours de chargement...', 'info');
+                }
+            })
+            .catch(() => showStatus('Erreur de connexion', 'error'));
+    </script>
+</body>
+</html>
+"""
 
 @app.route('/')
 def index():
-    """Page principale"""
-    return render_template('index.html')
+    """Page d'accueil avec template intégré"""
+    return render_template_string(HTML_TEMPLATE)
 
-@app.route('/generate', methods=['POST'])
+@app.route('/api/generate', methods=['POST'])
 def generate_image():
-    """Endpoint pour générer une image"""
+    """API de génération d'images"""
     try:
         data = request.get_json()
         
         # Validation
         prompt = data.get('prompt', '').strip()
         if not prompt:
-            return jsonify({'error': 'Le prompt ne peut pas être vide'}), 400
+            return jsonify({'error': 'Prompt requis'}), 400
         
         if len(prompt) > 500:
-            return jsonify({'error': 'Le prompt est trop long (max 500 caractères)'}), 400
+            return jsonify({'error': 'Prompt trop long (max 500 caractères)'}), 400
         
-        # Paramètres
-        negative_prompt = data.get('negative_prompt', '')
-        width = min(max(int(data.get('width', 512)), 256), 768)
-        height = min(max(int(data.get('height', 512)), 256), 768)
-        steps = min(max(int(data.get('steps', 20)), 10), 30)
-        guidance = min(max(float(data.get('guidance', 7.5)), 1.0), 15.0)
+        # Paramètres avec limites pour CPU
+        params = {
+            'prompt': prompt,
+            'negative_prompt': data.get('negative_prompt', ''),
+            'width': min(int(data.get('width', 512)), 512),
+            'height': min(int(data.get('height', 512)), 512),
+            'num_inference_steps': min(int(data.get('num_inference_steps', 20)), 30),
+            'guidance_scale': min(float(data.get('guidance_scale', 7.5)), 15.0),
+            'seed': data.get('seed')
+        }
         
-        logger.info(f"Génération: {prompt[:100]}...")
+        logger.info(f"Génération demandée: {prompt[:50]}...")
         
         # Génération
-        image = generator.generate_image(
-            prompt=prompt,
-            negative_prompt=negative_prompt,
-            width=width,
-            height=height,
-            steps=steps,
-            guidance=guidance
-        )
+        image = image_generator.generate_image(**params)
         
-        # Sauvegarde
-        filename = f"ai_image_{uuid.uuid4().hex[:8]}.png"
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        
-        # Optimisation de l'image pour réduire la taille
-        image.save(filepath, 'PNG', optimize=True)
-        
-        # Conversion base64
+        # Conversion en base64
         buffer = io.BytesIO()
-        image.save(buffer, format='PNG', optimize=True, quality=90)
-        img_base64 = base64.b64encode(buffer.getvalue()).decode()
+        image.save(buffer, format='PNG', optimize=True)
+        buffer.seek(0)
+        image_base64 = base64.b64encode(buffer.getvalue()).decode()
+        
+        logger.info("Image générée avec succès")
         
         return jsonify({
             'success': True,
-            'image': f"data:image/png;base64,{img_base64}",
-            'filename': filename,
-            'parameters': {
-                'prompt': prompt,
-                'negative_prompt': negative_prompt,
-                'width': width,
-                'height': height,
-                'steps': steps,
-                'guidance': guidance
-            },
-            'info': 'Générée via API Hugging Face'
+            'image': f"data:image/png;base64,{image_base64}",
+            'parameters': params
         })
         
     except Exception as e:
-        logger.error(f"Erreur génération: {str(e)}")
-        return jsonify({
-            'error': f'Erreur: {str(e)}',
-            'suggestion': 'Réessayez avec un prompt plus simple'
-        }), 500
-
-@app.route('/download/<filename>')
-def download_image(filename):
-    """Téléchargement d'image"""
-    try:
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        if os.path.exists(filepath):
-            return send_file(filepath, as_attachment=True, download_name=filename)
-        else:
-            return jsonify({'error': 'Fichier introuvable'}), 404
-    except Exception as e:
+        logger.error(f"Erreur génération: {e}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/status')
+def status():
+    """Status de l'API"""
+    return jsonify({
+        'status': 'online',
+        'model_loaded': image_generator.model_loaded,
+        'is_loading': image_generator.is_loading,
+        'device': image_generator.device,
+        'environment': 'production',
+        'timestamp': datetime.now().isoformat()
+    })
 
 @app.route('/health')
 def health_check():
-    """Santé du service"""
-    return jsonify({
-        'status': 'healthy',
-        'mode': 'api_only',
-        'timestamp': datetime.now().isoformat(),
-        'version': '1.0'
-    })
+    """Health check pour Render"""
+    return jsonify({'status': 'healthy'}), 200
 
-@app.route('/models')
-def list_models():
-    """Liste des modèles disponibles"""
-    models = []
-    for url in generator.api_urls:
-        model_name = url.split('/')[-1]
-        models.append({
-            'name': model_name,
-            'url': url,
-            'description': f'Modèle {model_name}'
-        })
-    
-    return jsonify({'models': models})
-
-# Nettoyage automatique des fichiers
-def cleanup_old_files():
-    """Nettoie les vieux fichiers"""
-    try:
-        current_time = time.time()
-        cleaned = 0
-        
-        for filename in os.listdir(UPLOAD_FOLDER):
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
-            if os.path.isfile(filepath):
-                age = current_time - os.path.getmtime(filepath)
-                if age > 3600:  # 1 heure
-                    os.remove(filepath)
-                    cleaned += 1
-        
-        if cleaned > 0:
-            logger.info(f"Nettoyage: {cleaned} fichiers supprimés")
-            
-    except Exception as e:
-        logger.error(f"Erreur nettoyage: {str(e)}")
-
-# Nettoyage périodique
-@app.before_request
-def periodic_cleanup():
-    """Nettoyage périodique"""
-    if not hasattr(app, 'last_cleanup'):
-        app.last_cleanup = 0
-    
-    current_time = time.time()
-    if current_time - app.last_cleanup > 1800:  # 30 minutes
-        cleanup_old_files()
-        app.last_cleanup = current_time
-
+# Point d'entrée pour Gunicorn
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    debug = os.environ.get('FLASK_ENV') != 'production'
+    
+    logger.info(f"Démarrage de l'application sur le port {port}")
+    app.run(host='0.0.0.0', port=port, debug=debug)
+
+# Application WSGI pour Gunicorn
+application = app
