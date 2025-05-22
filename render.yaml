@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: ai-image-generator
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: PORT
+        value: 8000
+      - key: HF_HOME
+        value: /tmp/huggingface
+      - key: TRANSFORMERS_CACHE
+        value: /tmp/transformers
+    disk:
+      name: ai-models
+      mountPath: /tmp
+      sizeGB: 20
