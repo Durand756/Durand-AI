@@ -1,79 +1,26 @@
-# Générateur d'Images AI - Requirements Production
-# Optimisé pour déploiement sur Render.com
+# Requirements pour Render GRATUIT (512MB RAM max)
+# Version ultra-légère, pas de PyTorch/TensorFlow !
 
-# Framework Web
+# Framework web minimaliste
 Flask==2.3.3
 Flask-CORS==4.0.0
 gunicorn==21.2.0
 
-# Traitement d'images
+# Traitement d'images léger
 Pillow==10.0.1
-opencv-python-headless==4.8.1.78
 numpy==1.24.4
 
-# Requests pour APIs externes
+# Requests pour APIs
 requests==2.31.0
-urllib3==2.0.7
 
-# Intelligence Artificielle - Modèles locaux
-torch==2.1.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
-torchvision==0.16.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
-diffusers==0.21.4
-transformers==4.35.2
-accelerate==0.24.1
-safetensors==0.4.0
-
-# Schedulers avancés pour Stable Diffusion
-scipy==1.11.4
-scikit-image==0.22.0
-
-# APIs externes - OpenAI
+# OpenAI (léger)
 openai==1.3.7
 
-# APIs externes - Replicate
-replicate==0.15.4
+# Pas de replicate package (on utilise l'API REST directement)
+# Pas de torch/diffusers (trop lourd pour Render gratuit)
+# Pas de transformers (512MB RAM insuffisante)
 
-# APIs externes - Hugging Face
-huggingface-hub==0.17.3
-
-# Optimisation mémoire et performance
-psutil==5.9.6
-memory-profiler==0.61.0
-
-# Utilitaires
+# Utilitaires légers seulement
 python-dotenv==1.0.0
-pyyaml==6.0.1
-tqdm==4.66.1
 
-# Logging et monitoring
-colorlog==6.8.0
-
-# Support formats d'images avancés
-imageio==2.31.5
-imageio-ffmpeg==0.4.9
-
-# Traitement mathématique avancé
-sympy==1.12
-
-# Alternative légère si PyTorch pose problème
-# tensorflow-cpu==2.13.0  # Décommentez si besoin d'un fallback
-
-# Optimisations spécifiques CPU
-threadpoolctl==3.2.0
-
-# Support ONNX pour modèles optimisés
-onnx==1.15.0
-onnxruntime==1.16.3
-
-# Cache et optimisation
-diskcache==5.6.3
-joblib==1.3.2
-
-# Support WebP et formats modernes
-webp==0.1.6
-
-# Compression d'images
-tinify==1.6.0  # Optionnel, nécessite API key TinyPNG
-
-# Métriques et qualité d'image
-lpips==0.1.4  # Perceptual loss
+# C'est tout ! Render gratuit = minimaliste obligatoire
