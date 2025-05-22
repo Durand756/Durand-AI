@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur d'Images AI Ultra-Réalistes</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hero-section {
+            padding: 2rem 0;
+            text-align: center;
+            color: white;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 1rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+            border: none;
+        }
+        
+        .btn-generate {
+            background: linear-gradient(45deg, var(--accent-color), var(--primary-color));
+            border: none;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: bold;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+        }
+        
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(240, 147, 251, 0.6);
+            color: white;
+        }
+        
+        .btn-generate:disabled {
+            opacity: 0.6;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .image-container {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .generated-image {
+            max-width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .generated-image:hover {
+            transform: scale(1.02);
+        }
+        
+        .loading-spinner {
+            display: none;
+            margin: 2rem auto;
+        }
+        
+        .parameter-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .parameter-title {
+            color: white;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .range-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .range-value {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        
+        .example-prompts {
+            margin-top: 1rem;
+        }
+        
+        .example-prompt {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .example-prompt:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1 class="hero-title">
+                <i class="fas fa-magic"></i> Générateur d'Images AI
+            </h1>
+            <p class="hero-subtitle">
+                Créez des images ultra-réalistes avec l'intelligence artificielle
+            </p>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                <!-- Panneau de contrôle -->
+                <div class="col-lg-4 mb-4">
+                    <div class="glass-card p-4">
+                        <h3 class="text-white mb-4">
+                            <i class="fas fa-sliders-h"></i> Paramètres
+                        </h3>
+                        
+                        <form id="generateForm">
+                            <!-- Prompt principal -->
+                            <div class="mb-3">
+                                <label class="form-label text-white">
+                                    <i class="fas fa-pen"></i> Description de l'image
+                                </label>
+                                <textarea 
+                                    class="form-control" 
+                                    id="prompt" 
+                                    rows="3" 
+                                    placeholder="Décrivez l'image que vous souhaitez générer..."
+                                    required
+                                ></textarea>
+                            </div>
+
+                            <!-- Exemples de prompts -->
+                            <div class="example-prompts">
+                                <small class="text-white-50">Exemples :</small><br>
+                                <span class="example-prompt" onclick="setPrompt('Un paysage de montagne au coucher du soleil, hyperréaliste, 4K')">🏔️ Paysage montagnard</span>
+                                <span class="example-prompt" onclick="setPrompt('Portrait d\'une femme élégante, style renaissance, éclairage dramatique')">👩‍🎨 Portrait artistique</span>
+                                <span class="example-prompt" onclick="setPrompt('Ville futuriste cyberpunk, néons, pluie, hyperréaliste')">🌃 Ville futuriste</span>
+                                <span class="example-prompt" onclick="setPrompt('Chat mignon dans un jardin fleuri, style photographique')">🐱 Animal mignon</span>
+                            </div>
+
+                            <!-- Prompt négatif -->
+                            <div class="parameter-card">
+                                <div class="parameter-title">
+                                    <i class="fas fa-ban"></i> Éléments à éviter
+                                </div>
+                                <textarea 
+                                    class="form-control" 
+                                    id="negativePrompt" 
+                                    rows="2" 
+                                    placeholder="Éléments indésirables (optionnel)..."
+                                ></textarea>
+                            </div>
+
+                            <!-- Dimensions -->
+                            <div class="parameter-card">
+                                <div class="parameter-title">
+                                    <i class="fas fa-expand-arrows-alt"></i> Dimensions
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <label class="range-label">Largeur: <span class="range-value" id="widthValue">512</span>px</label>
+                                        <input type="range" class="form-range" id="width" min="256" max="1024" step="64" value="512">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="range-label">Hauteur: <span class="range-value" id="heightValue">512</span>px</label>
+                                        <input type="range" class="form-range" id="height" min="256" max="1024" step="64" value="512">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Paramètres avancés -->
+                            <div class="parameter-card">
+                                <div class="parameter-title">
+                                    <i class="fas fa-cogs"></i> Paramètres avancés
+                                </div>
+                                
+                                <label class="range-label">Étapes: <span class="range-value" id="stepsValue">20</span></label>
+                                <input type="range" class="form-range" id="steps" min="10" max="50" value="20">
+                                
+                                <label class="range-label">Guidance: <span class="range-value" id="guidanceValue">7.5</span></label>
+                                <input type="range" class="form-range" id="guidance" min="1" max="20" step="0.5" value="7.5">
+                                
+                                <label class="range-label text-white">Graine (seed) :</label>
+                                <input type="number" class="form-control" id="seed" placeholder="Aléatoire">
+                            </div>
+
+                            <!-- Bouton de génération -->
+                            <button type="submit" class="btn btn-generate w-100" id="generateBtn">
+                                <i class="fas fa-magic"></i> Générer l'image
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Zone d'affichage -->
+                <div class="col-lg-8">
+                    <div class="glass-card p-4">
+                        <h3 class="text-white mb-4">
+                            <i class="fas fa-image"></i> Résultat
+                        </h3>
+                        
+                        <!-- Zone d'image -->
+                        <div id="imageContainer" class="image-container">
+                            <div class="text-center text-white-50 py-5">
+                                <i class="fas fa-image fa-4x mb-3" style="opacity: 0.3;"></i>
+                                <p>Votre image générée apparaîtra ici</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Spinner de chargement -->
+                        <div class="loading-spinner text-center" id="loadingSpinner">
+                            <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+                                <span class="visually-hidden">Génération en cours...</span>
+                            </div>
+                            <p class="text-white mt-3">Génération en cours...</p>
+                            <small class="text-white-50">Cela peut prendre jusqu'à 30 secondes</small>
+                        </div>
+                        
+                        <!-- Boutons d'action -->
+                        <div id="actionButtons" class="text-center mt-3" style="display: none;">
+                            <button class="btn btn-outline-light me-2" onclick="downloadImage()">
+                                <i class="fas fa-download"></i> Télécharger
+                            </button>
+                            <button class="btn btn-outline-light" onclick="shareImage()">
+                                <i class="fas fa-share"></i> Partager
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>© 2024 Générateur d'Images AI - Propulsé par Stable Diffusion</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let currentImageData = null;
+        let currentFilename = null;
+
+        // Mise à jour des valeurs des sliders
+        document.getElementById('width').addEventListener('input', function() {
+            document.getElementById('widthValue').textContent = this.value;
+        });
+
+        document.getElementById('height').addEventListener('input', function() {
+            document.getElementById('heightValue').textContent = this.value;
+        });
+
+        document.getElementById('steps').addEventListener('input', function() {
+            document.getElementById('stepsValue').textContent = this.value;
+        });
+
+        document.getElementById('guidance').addEventListener('input', function() {
+            document.getElementById('guidanceValue').textContent = this.value;
+        });
+
+        // Fonction pour définir un prompt d'exemple
+        function setPrompt(prompt) {
+            document.getElementById('prompt').value = prompt;
+        }
+
+        // Gestion du formulaire
+        document.getElementById('generateForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                prompt: document.getElementById('prompt').value,
+                negative_prompt: document.getElementById('negativePrompt').value,
+                width: parseInt(document.getElementById('width').value),
+                height: parseInt(document.getElementById('height').value),
+                steps: parseInt(document.getElementById('steps').value),
+                guidance: parseFloat(document.getElementById('guidance').value),
+                seed: document.getElementById('seed').value ? parseInt(document.getElementById('seed').value) : null
+            };
+
+            // Interface de chargement
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('generateBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération...';
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('imageContainer').style.display = 'none';
+            document.getElementById('actionButtons').style.display = 'none';
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Affichage de l'image
+                    currentImageData = result.image;
+                    currentFilename = result.filename;
+                    
+                    document.getElementById('imageContainer').innerHTML = `
+                        <img src="${result.image}" alt="Image générée" class="generated-image">
+                        <div class="mt-3 text-white-50">
+                            <small>
+                                <i class="fas fa-info-circle"></i>
+                                ${result.parameters.width}x${result.parameters.height} | 
+                                ${result.parameters.steps} étapes | 
+                                Guidance: ${result.parameters.guidance}
+                                ${result.parameters.seed ? ` | Seed: ${result.parameters.seed}` : ''}
+                            </small>
+                        </div>
+                    `;
+                    
+                    document.getElementById('actionButtons').style.display = 'block';
+                } else {
+                    throw new Error(result.error || 'Erreur inconnue');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('imageContainer').innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Erreur lors de la génération: ${error.message}
+                    </div>
+                `;
+            } finally {
+                // Restauration de l'interface
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('generateBtn').innerHTML = '<i class="fas fa-magic"></i> Générer l\'image';
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('imageContainer').style.display = 'block';
+            }
+        });
+
+        // Fonction de téléchargement
+        function downloadImage() {
+            if (currentFilename) {
+                const link = document.createElement('a');
+                link.href = `/download/${currentFilename}`;
+                link.download = currentFilename;
+                link.click();
+            }
+        }
+
+        // Fonction de partage
+        function shareImage() {
+            if (currentImageData && navigator.share) {
+                // Conversion base64 vers blob pour le partage natif
+                fetch(currentImageData)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const file = new File([blob], 'image-ai.png', { type: 'image/png' });
+                        navigator.share({
+                            title: 'Image générée par IA',
+                            text: 'Regardez cette image que j\'ai créée avec l\'IA !',
+                            files: [file]
+                        });
+                    })
+                    .catch(err => {
+                        // Fallback: copier l'URL de l'image
+                        navigator.clipboard.writeText(window.location.href);
+                        alert('Lien copié dans le presse-papier !');
+                    });
+            } else {
+                // Fallback pour les navigateurs sans support du partage
+                navigator.clipboard.writeText(window.location.href);
+                alert('Lien copié dans le presse-papier !');
+            }
+        }
+
+        // Vérification de l'état du service au chargement
+        fetch('/health')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Service status:', data);
+            })
+            .catch(error => {
+                console.error('Service health check failed:', error);
+            });
+    </script>
+</body>
+</html>
