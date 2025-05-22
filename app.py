@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, jsonify, send_file
 from flask_cors import CORS
-import torch
 import requests
 import io
 import base64
@@ -8,8 +7,9 @@ import os
 import uuid
 from datetime import datetime
 import logging
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import json
+import time
 
 # Configuration du logging
 logging.basicConfig(level=logging.INFO)
@@ -18,147 +18,155 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)
 
-# Configuration optimisée pour Render
+# Configuration
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 UPLOAD_FOLDER = 'generated_images'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Configuration des caches pour optimiser l'espace
-os.environ['TRANSFORMERS_CACHE'] = '/tmp/transformers_cache'
-os.environ['HF_HOME'] = '/tmp/hf_cache'
-
-class AIImageGenerator:
+class SimpleAIImageGenerator:
     def __init__(self):
-        self.api_mode = True  # Mode API par défaut pour Render gratuit
-        self.hf_token = os.environ.get('HF_TOKEN', '')  # Token Hugging Face optionnel
+        self.hf_token = os.environ.get('HF_TOKEN', '')
+        self.api_urls = [
+            "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
+            "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1",
+            "https://api-inference.huggingface.co/models/dreamlike-art/dreamlike-diffusion-1.0"
+        ]
         
-    def generate_image_api(self, prompt, negative_prompt="", width=512, height=512, 
-                          num_inference_steps=20, guidance_scale=7.5):
-        """Génération via l'API Hugging Face (recommandé pour Render gratuit)"""
-        try:
-            logger.info(f"Génération via API pour: {prompt}")
-            
-            # URL de l'API Hugging Face Inference
-            api_url = "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5"
-            
-            headers = {}
-            if self.hf_token:
-                headers["Authorization"] = f"Bearer {self.hf_token}"
-            
-            payload = {
-                "inputs": prompt,
-                "parameters": {
-                    "negative_prompt": negative_prompt,
-                    "width": width,
-                    "height": height,
-                    "num_inference_steps": num_inference_steps,
-                    "guidance_scale": guidance_scale
-                }
-            }
-            
-            response = requests.post(api_url, headers=headers, json=payload, timeout=60)
-            
-            if response.status_code == 200:
-                image = Image.open(io.BytesIO(response.content))
-                return image
-            else:
-                logger.error(f"Erreur API: {response.status_code} - {response.text}")
-                # Fallback vers génération locale si API échoue
-                return self.generate_image_local(prompt, negative_prompt, width, height, 
-                                               num_inference_steps, guidance_scale)
+    def generate_image(self, prompt, negative_prompt="", width=512, height=512, **kwargs):
+        """Génération d'image via API Hugging Face"""
+        
+        # Amélioration du prompt
+        enhanced_prompt = f"{prompt}, high quality, detailed, masterpiece"
+        if negative_prompt:
+            negative_prompt += ", blurry, low quality, distorted, ugly"
+        else:
+            negative_prompt = "blurry, low quality, distorted, ugly, bad anatomy"
+        
+        # Tentative avec différentes APIs
+        for api_url in self.api_urls:
+            try:
+                logger.info(f"Tentative avec: {api_url}")
                 
-        except Exception as e:
-            logger.error(f"Erreur API: {str(e)}")
-            # Fallback vers génération locale
-            return self.generate_image_local(prompt, negative_prompt, width, height, 
-                                           num_inference_steps, guidance_scale)
-    
-    def generate_image_local(self, prompt, negative_prompt="", width=256, height=256, 
-                           num_inference_steps=10, guidance_scale=7.5):
-        """Génération locale avec modèle léger (fallback)"""
-        try:
-            logger.info("Tentative de génération locale...")
-            
-            # Import conditionnel pour éviter les erreurs si pas assez de RAM
-            from diffusers import StableDiffusionPipeline
-            
-            # Utilisation d'un modèle plus léger
-            model_id = "dreamlike-art/dreamlike-diffusion-1.0"
-            
-            pipe = StableDiffusionPipeline.from_pretrained(
-                model_id,
-                torch_dtype=torch.float32,
-                safety_checker=None,
-                requires_safety_checker=False,
-                cache_dir="/tmp/models"
-            )
-            
-            pipe = pipe.to("cpu")
-            
-            # Génération avec paramètres réduits pour économiser la RAM
-            image = pipe(
-                prompt=prompt,
-                negative_prompt=negative_prompt,
-                width=min(width, 256),  # Limite la taille
-                height=min(height, 256),
-                num_inference_steps=min(num_inference_steps, 10),
-                guidance_scale=guidance_scale
-            ).images[0]
-            
-            # Libération immédiate de la mémoire
-            del pipe
-            torch.cuda.empty_cache() if torch.cuda.is_available() else None
-            
-            return image
-            
-        except Exception as e:
-            logger.error(f"Erreur génération locale: {str(e)}")
-            # Génération d'une image placeholder en cas d'échec
-            return self.generate_placeholder_image(prompt)
-    
-    def generate_placeholder_image(self, prompt):
-        """Génère une image placeholder en cas d'échec"""
-        logger.info("Génération d'image placeholder")
+                headers = {"Content-Type": "application/json"}
+                if self.hf_token:
+                    headers["Authorization"] = f"Bearer {self.hf_token}"
+                
+                # Payload simple pour éviter les erreurs
+                payload = {
+                    "inputs": enhanced_prompt
+                }
+                
+                # Si le modèle supporte les paramètres avancés
+                if "stable-diffusion-v1-5" in api_url or "stable-diffusion-2" in api_url:
+                    payload["parameters"] = {
+                        "negative_prompt": negative_prompt,
+                        "num_inference_steps": min(kwargs.get('steps', 20), 25),
+                        "guidance_scale": kwargs.get('guidance', 7.5)
+                    }
+                
+                response = requests.post(
+                    api_url, 
+                    headers=headers, 
+                    json=payload, 
+                    timeout=60
+                )
+                
+                if response.status_code == 200:
+                    try:
+                        image = Image.open(io.BytesIO(response.content))
+                        # Redimensionner si nécessaire
+                        if image.size != (width, height):
+                            image = image.resize((width, height), Image.Resampling.LANCZOS)
+                        logger.info(f"Image générée avec succès via {api_url}")
+                        return image
+                    except Exception as e:
+                        logger.error(f"Erreur traitement image: {str(e)}")
+                        continue
+                        
+                elif response.status_code == 503:
+                    logger.warning(f"Modèle en cours de chargement: {api_url}")
+                    # Attendre un peu et continuer avec le prochain modèle
+                    time.sleep(2)
+                    continue
+                else:
+                    logger.warning(f"Erreur API {response.status_code}: {response.text}")
+                    continue
+                    
+            except requests.exceptions.Timeout:
+                logger.warning(f"Timeout pour {api_url}")
+                continue
+            except Exception as e:
+                logger.error(f"Erreur {api_url}: {str(e)}")
+                continue
         
-        # Création d'une image simple avec le prompt
-        img_width, img_height = 512, 512
-        image = Image.new('RGB', (img_width, img_height), color='#667eea')
+        # Si toutes les APIs échouent, générer une image placeholder
+        logger.warning("Toutes les APIs ont échoué, génération d'un placeholder")
+        return self.create_placeholder_image(prompt, width, height)
+    
+    def create_placeholder_image(self, prompt, width=512, height=512):
+        """Crée une image placeholder avec le texte du prompt"""
+        
+        # Couleurs gradient
+        colors = [
+            (102, 126, 234),  # Bleu
+            (118, 75, 162),   # Violet
+            (240, 147, 251)   # Rose
+        ]
+        
+        # Création de l'image avec gradient
+        image = Image.new('RGB', (width, height), colors[0])
         
         try:
-            from PIL import ImageDraw, ImageFont
             draw = ImageDraw.Draw(image)
             
-            # Texte centré
-            text = f"Image générée pour:\n{prompt[:50]}..."
+            # Créer un effet de gradient simple
+            for y in range(height):
+                ratio = y / height
+                r = int(colors[0][0] + (colors[1][0] - colors[0][0]) * ratio)
+                g = int(colors[0][1] + (colors[1][1] - colors[0][1]) * ratio)
+                b = int(colors[0][2] + (colors[1][2] - colors[0][2]) * ratio)
+                draw.line([(0, y), (width, y)], fill=(r, g, b))
             
-            # Essaie d'utiliser une police par défaut
+            # Ajouter le texte
+            text_lines = [
+                "🎨 Image générée par IA",
+                "",
+                f"Prompt: {prompt[:40]}{'...' if len(prompt) > 40 else ''}",
+                "",
+                "Générateur AI - Render"
+            ]
+            
+            # Police par défaut
             try:
-                font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 20)
+                font_large = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
+                font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16)
             except:
-                font = ImageFont.load_default()
+                font_large = ImageFont.load_default()
+                font_small = ImageFont.load_default()
             
-            # Calcul de la position centrée
-            bbox = draw.textbbox((0, 0), text, font=font)
-            text_width = bbox[2] - bbox[0]
-            text_height = bbox[3] - bbox[1]
+            # Calcul de la position du texte
+            y_offset = height // 2 - (len(text_lines) * 30) // 2
             
-            position = ((img_width - text_width) // 2, (img_height - text_height) // 2)
-            draw.text(position, text, fill='white', font=font)
+            for i, line in enumerate(text_lines):
+                if line:  # Skip empty lines
+                    font = font_large if i == 0 else font_small
+                    bbox = draw.textbbox((0, 0), line, font=font)
+                    text_width = bbox[2] - bbox[0]
+                    x = (width - text_width) // 2
+                    y = y_offset + i * 30
+                    
+                    # Ombre
+                    draw.text((x+1, y+1), line, fill=(0, 0, 0, 128), font=font)
+                    # Texte principal
+                    draw.text((x, y), line, fill='white', font=font)
             
         except Exception as e:
             logger.error(f"Erreur création placeholder: {str(e)}")
         
         return image
-    
-    def generate_image(self, prompt, **kwargs):
-        """Point d'entrée principal pour la génération"""
-        if self.api_mode:
-            return self.generate_image_api(prompt, **kwargs)
-        else:
-            return self.generate_image_local(prompt, **kwargs)
 
 # Instance globale
-generator = AIImageGenerator()
+generator = SimpleAIImageGenerator()
 
 @app.route('/')
 def index():
@@ -171,42 +179,44 @@ def generate_image():
     try:
         data = request.get_json()
         
-        # Validation des paramètres
+        # Validation
         prompt = data.get('prompt', '').strip()
         if not prompt:
             return jsonify({'error': 'Le prompt ne peut pas être vide'}), 400
         
-        # Amélioration automatique du prompt pour de meilleurs résultats
-        enhanced_prompt = f"{prompt}, high quality, detailed, photorealistic, 4k"
+        if len(prompt) > 500:
+            return jsonify({'error': 'Le prompt est trop long (max 500 caractères)'}), 400
         
-        negative_prompt = data.get('negative_prompt', 'blurry, low quality, distorted')
-        width = min(max(int(data.get('width', 512)), 256), 512)  # Limite pour Render
-        height = min(max(int(data.get('height', 512)), 256), 512)
-        steps = min(max(int(data.get('steps', 20)), 10), 25)  # Réduit pour performance
+        # Paramètres
+        negative_prompt = data.get('negative_prompt', '')
+        width = min(max(int(data.get('width', 512)), 256), 768)
+        height = min(max(int(data.get('height', 512)), 256), 768)
+        steps = min(max(int(data.get('steps', 20)), 10), 30)
         guidance = min(max(float(data.get('guidance', 7.5)), 1.0), 15.0)
-        seed = data.get('seed')
         
-        logger.info(f"Génération demandée: {enhanced_prompt}")
+        logger.info(f"Génération: {prompt[:100]}...")
         
-        # Génération de l'image
+        # Génération
         image = generator.generate_image(
-            prompt=enhanced_prompt,
+            prompt=prompt,
             negative_prompt=negative_prompt,
             width=width,
             height=height,
-            num_inference_steps=steps,
-            guidance_scale=guidance
+            steps=steps,
+            guidance=guidance
         )
         
-        # Sauvegarde de l'image
-        filename = f"{uuid.uuid4()}.png"
+        # Sauvegarde
+        filename = f"ai_image_{uuid.uuid4().hex[:8]}.png"
         filepath = os.path.join(UPLOAD_FOLDER, filename)
-        image.save(filepath, optimize=True, quality=85)  # Compression pour économiser l'espace
         
-        # Conversion en base64
-        img_buffer = io.BytesIO()
-        image.save(img_buffer, format='PNG', optimize=True, quality=85)
-        img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
+        # Optimisation de l'image pour réduire la taille
+        image.save(filepath, 'PNG', optimize=True)
+        
+        # Conversion base64
+        buffer = io.BytesIO()
+        image.save(buffer, format='PNG', optimize=True, quality=90)
+        img_base64 = base64.b64encode(buffer.getvalue()).decode()
         
         return jsonify({
             'success': True,
@@ -214,86 +224,90 @@ def generate_image():
             'filename': filename,
             'parameters': {
                 'prompt': prompt,
-                'enhanced_prompt': enhanced_prompt,
                 'negative_prompt': negative_prompt,
                 'width': width,
                 'height': height,
                 'steps': steps,
-                'guidance': guidance,
-                'seed': seed
+                'guidance': guidance
             },
-            'generation_method': 'api' if generator.api_mode else 'local'
+            'info': 'Générée via API Hugging Face'
         })
         
     except Exception as e:
-        logger.error(f"Erreur dans generate_image: {str(e)}")
+        logger.error(f"Erreur génération: {str(e)}")
         return jsonify({
-            'error': f'Erreur lors de la génération: {str(e)}',
-            'suggestion': 'Essayez avec un prompt plus simple ou réduisez les dimensions'
+            'error': f'Erreur: {str(e)}',
+            'suggestion': 'Réessayez avec un prompt plus simple'
         }), 500
 
 @app.route('/download/<filename>')
 def download_image(filename):
-    """Téléchargement d'une image générée"""
+    """Téléchargement d'image"""
     try:
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         if os.path.exists(filepath):
-            return send_file(filepath, as_attachment=True)
+            return send_file(filepath, as_attachment=True, download_name=filename)
         else:
-            return jsonify({'error': 'Fichier non trouvé'}), 404
+            return jsonify({'error': 'Fichier introuvable'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/health')
 def health_check():
-    """Vérification de l'état du service"""
+    """Santé du service"""
     return jsonify({
         'status': 'healthy',
-        'mode': 'api' if generator.api_mode else 'local',
-        'device': 'cpu',
-        'memory_usage': get_memory_usage(),
-        'timestamp': datetime.now().isoformat()
+        'mode': 'api_only',
+        'timestamp': datetime.now().isoformat(),
+        'version': '1.0'
     })
 
-@app.route('/toggle-mode', methods=['POST'])
-def toggle_generation_mode():
-    """Basculer entre API et génération locale"""
-    generator.api_mode = not generator.api_mode
-    return jsonify({
-        'mode': 'api' if generator.api_mode else 'local',
-        'message': f"Mode basculé vers: {'API' if generator.api_mode else 'Local'}"
-    })
+@app.route('/models')
+def list_models():
+    """Liste des modèles disponibles"""
+    models = []
+    for url in generator.api_urls:
+        model_name = url.split('/')[-1]
+        models.append({
+            'name': model_name,
+            'url': url,
+            'description': f'Modèle {model_name}'
+        })
+    
+    return jsonify({'models': models})
 
-def get_memory_usage():
-    """Obtient l'utilisation mémoire approximative"""
+# Nettoyage automatique des fichiers
+def cleanup_old_files():
+    """Nettoie les vieux fichiers"""
     try:
-        import psutil
-        process = psutil.Process(os.getpid())
-        memory_info = process.memory_info()
-        return {
-            'rss': memory_info.rss / 1024 / 1024,  # MB
-            'vms': memory_info.vms / 1024 / 1024   # MB
-        }
-    except:
-        return {'error': 'psutil not available'}
-
-# Nettoyage automatique des fichiers anciens
-@app.before_request
-def cleanup_old_images():
-    """Nettoie les images anciennes pour économiser l'espace"""
-    try:
-        import time
         current_time = time.time()
+        cleaned = 0
+        
         for filename in os.listdir(UPLOAD_FOLDER):
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             if os.path.isfile(filepath):
-                file_age = current_time - os.path.getmtime(filepath)
-                # Supprime les fichiers de plus d'une heure
-                if file_age > 3600:
+                age = current_time - os.path.getmtime(filepath)
+                if age > 3600:  # 1 heure
                     os.remove(filepath)
-                    logger.info(f"Image supprimée: {filename}")
+                    cleaned += 1
+        
+        if cleaned > 0:
+            logger.info(f"Nettoyage: {cleaned} fichiers supprimés")
+            
     except Exception as e:
         logger.error(f"Erreur nettoyage: {str(e)}")
+
+# Nettoyage périodique
+@app.before_request
+def periodic_cleanup():
+    """Nettoyage périodique"""
+    if not hasattr(app, 'last_cleanup'):
+        app.last_cleanup = 0
+    
+    current_time = time.time()
+    if current_time - app.last_cleanup > 1800:  # 30 minutes
+        cleanup_old_files()
+        app.last_cleanup = current_time
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
