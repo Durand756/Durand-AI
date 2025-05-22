@@ -279,9 +279,9 @@
                 Générateur AI
             </h1>
             <p class="hero-subtitle">Créez des images ultra-réalistes avec l'intelligence artificielle</p>
-            <div id="status-badge" class="status-badge status-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                Chargement du modèle...
+            <div id="status-badge" class="status-badge status-ready">
+                <i class="fas fa-check"></i>
+                Générateur Prêt
             </div>
         </div>
     </div>
@@ -430,7 +430,7 @@
                 if (data.loaded && !modelLoaded) {
                     modelLoaded = true;
                     statusBadge.className = 'status-badge status-ready';
-                    statusBadge.innerHTML = '<i class="fas fa-check"></i> Modèle prêt (' + data.device.toUpperCase() + ')';
+                    statusBadge.innerHTML = `<i class="fas fa-check"></i> ${data.method || 'Générateur Prêt'}`;
                     generateBtn.disabled = false;
                 } else if (data.loading) {
                     statusBadge.className = 'status-badge status-loading';
@@ -553,11 +553,15 @@
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', () => {
+            // Le générateur est toujours prêt maintenant
+            modelLoaded = true;
+            generateBtn.disabled = false;
+            
             checkStatus();
             loadExamples();
             
             // Vérification périodique du statut
-            setInterval(checkStatus, 2000);
+            setInterval(checkStatus, 5000);
         });
     </script>
 </body>
