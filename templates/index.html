@@ -321,14 +321,24 @@
                             ></textarea>
                         </div>
 
+                        <!-- Sélection API -->
+                        <div class="mb-3">
+                            <label class="form-label">API de Génération</label>
+                            <select class="form-select" id="api-choice">
+                                <option value="auto" selected>🎯 Auto (Meilleur résultat)</option>
+                                <option value="pollinations">🎨 Pollinations AI (Rapide)</option>
+                                <option value="huggingface">🤗 Hugging Face (Qualité)</option>
+                            </select>
+                        </div>
+
                         <!-- Options Avancées -->
                         <div class="advanced-options">
                             <h6><i class="fas fa-cogs"></i> Options Avancées</h6>
                             
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Étapes: <span id="steps-value">20</span></label>
-                                    <input type="range" class="form-range range-input" id="steps" min="10" max="50" value="20">
+                                    <label class="form-label">Étapes: <span id="steps-value">25</span></label>
+                                    <input type="range" class="form-range range-input" id="steps" min="10" max="50" value="25">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Guidance: <span id="guidance-value">7.5</span></label>
@@ -430,7 +440,7 @@
                 if (data.loaded && !modelLoaded) {
                     modelLoaded = true;
                     statusBadge.className = 'status-badge status-ready';
-                    statusBadge.innerHTML = `<i class="fas fa-check"></i> ${data.method || 'Générateur Prêt'}`;
+                    statusBadge.innerHTML = `<i class="fas fa-check"></i> ${data.current_api || 'Multi-API'} Ready`;
                     generateBtn.disabled = false;
                 } else if (data.loading) {
                     statusBadge.className = 'status-badge status-loading';
@@ -481,7 +491,12 @@
                     imageResult.innerHTML = `
                         <div class="text-center">
                             <img src="${data.image}" alt="Image générée" class="generated-image">
-                            <br>
+                            <div class="mt-3">
+                                <small class="text-success">
+                                    <i class="fas fa-check-circle"></i> 
+                                    Généré avec ${data.api_used} API
+                                </small>
+                            </div>
                             <button class="btn download-btn" onclick="downloadImage('${data.image}', '${data.prompt}')">
                                 <i class="fas fa-download"></i> Télécharger
                             </button>
@@ -526,8 +541,8 @@
             imageResult.innerHTML = `
                 <div class="text-center">
                     <div class="loading-spinner"></div>
-                    <p class="mt-3">Génération en cours...</p>
-                    <small class="text-muted">Cela peut prendre quelques instants</small>
+                    <p class="mt-3">🎨 Génération en cours...</p>
+                    <small class="text-muted">Utilisation d'APIs d'IA professionnelles<br>Temps estimé: 15-45 secondes</small>
                 </div>
             `;
             imageResult.classList.remove('has-image');
@@ -539,7 +554,8 @@
                 steps: parseInt(stepsSlider.value),
                 guidance_scale: parseFloat(guidanceSlider.value),
                 width: parseInt(document.getElementById('width').value),
-                height: parseInt(document.getElementById('height').value)
+                height: parseInt(document.getElementById('height').value),
+                api: document.getElementById('api-choice').value
             };
 
             // Génération
