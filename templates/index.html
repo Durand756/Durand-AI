@@ -3,349 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DGen AI - Générateur d'Images IA</title>
+    <title>Générateur d'Images AI Ultra-Réalistes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         :root {
-            --primary: #8B5CF6;
-            --primary-dark: #7C3AED;
-            --secondary: #06B6D4;
-            --accent: #F59E0B;
-            --bg-dark: #0F0F23;
-            --bg-darker: #0A0A1A;
-            --surface: #1A1A2E;
-            --surface-light: #252545;
-            --text: #FFFFFF;
-            --text-muted: #9CA3AF;
-            --border: rgba(255, 255, 255, 0.1);
-            --gradient-primary: linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%);
-            --gradient-secondary: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --dark-bg: #1a1a2e;
+            --card-bg: #16213e;
+            --text-light: #eee;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-dark);
-            color: var(--text);
-            line-height: 1.6;
-            overflow-x: hidden;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
         }
 
-        /* Header moderne */
-        .header {
-            background: rgba(15, 15, 35, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            padding: 1rem 0;
-        }
-
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: rgba(139, 92, 246, 0.1);
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            border-radius: 50px;
-            font-size: 0.875rem;
-            color: var(--primary);
-        }
-
-        /* Hero section moderne */
-        .hero {
-            margin-top: 5rem;
-            padding: 4rem 2rem;
+        .hero-section {
+            background: var(--primary-gradient);
+            padding: 4rem 0;
             text-align: center;
-            background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
             position: relative;
+            overflow: hidden;
         }
 
-        .hero::before {
+        .hero-section::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%238B5CF6' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            opacity: 0.5;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
         }
 
         .hero-content {
             position: relative;
             z-index: 2;
-            max-width: 800px;
-            margin: 0 auto;
         }
 
-        .hero h1 {
-            font-size: clamp(2.5rem, 5vw, 4rem);
-            font-weight: 800;
-            margin-bottom: 1.5rem;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1.2;
-        }
-
-        .hero p {
-            font-size: 1.25rem;
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Container principal */
-        .main-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem 4rem;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-        }
-
-        /* Cards modernes */
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 2rem;
-            backdrop-filter: blur(20px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: var(--gradient-primary);
-            opacity: 0.5;
-        }
-
-        .card-title {
-            font-size: 1.5rem;
+        .hero-title {
+            font-size: 3.5rem;
             font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
             margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
         }
 
-        /* Formulaire moderne */
-        .form-group {
-            margin-bottom: 1.5rem;
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
         }
 
-        .form-label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--text);
+        .generation-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
-        .form-input, .form-select, .form-textarea {
-            width: 100%;
-            padding: 1rem;
-            background: var(--surface-light);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: var(--text);
-            font-size: 0.95rem;
+        .form-control, .form-select {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-light);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
             transition: all 0.3s ease;
         }
 
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-            background: rgba(139, 92, 246, 0.05);
+        .form-control:focus, .form-select:focus {
+            background: rgba(255,255,255,0.15);
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            color: var(--text-light);
         }
 
-        .form-textarea {
-            resize: vertical;
-            min-height: 120px;
+        .form-control::placeholder {
+            color: rgba(255,255,255,0.6);
         }
 
-        ::placeholder {
-            color: var(--text-muted);
-        }
-
-        /* Bouton principal moderne */
-        .btn-primary {
-            width: 100%;
-            padding: 1.25rem 2rem;
-            background: var(--gradient-primary);
+        .btn-generate {
+            background: var(--secondary-gradient);
             border: none;
-            border-radius: 16px;
-            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
             font-weight: 600;
             font-size: 1.1rem;
-            cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
         }
 
-        .btn-primary:hover:not(:disabled) {
+        .btn-generate:hover {
             transform: translateY(-2px);
-            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
+            box-shadow: 0 10px 25px rgba(240, 147, 251, 0.4);
         }
 
-        .btn-primary:disabled {
+        .btn-generate:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
 
-        /* Options avancées */
-        .advanced-section {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
-        }
-
-        .advanced-title {
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--text-muted);
-        }
-
-        .slider-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .slider-container {
-            margin-bottom: 1rem;
-        }
-
-        .slider-label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-
-        .slider-value {
-            background: var(--primary);
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 6px;
-            font-weight: 600;
-        }
-
-        .range-slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 8px;
-            border-radius: 4px;
-            background: var(--surface-light);
-            outline: none;
-        }
-
-        .range-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--primary);
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-        }
-
-        /* Zone de résultat */
-        .result-area {
-            min-height: 400px;
-            background: var(--surface-light);
-            border: 2px dashed var(--border);
-            border-radius: 16px;
+        .image-result {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            min-height: 300px;
             display: flex;
             align-items: center;
             justify-content: center;
+            border: 2px dashed rgba(255,255,255,0.2);
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
 
-        .result-area.has-image {
-            border-color: var(--primary);
-            background: rgba(139, 92, 246, 0.05);
-        }
-
-        .result-placeholder {
-            text-align: center;
-            color: var(--text-muted);
-        }
-
-        .result-placeholder i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.3;
+        .image-result.has-image {
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            background: rgba(102, 126, 234, 0.1);
         }
 
         .generated-image {
             max-width: 100%;
-            max-height: 100%;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            max-height: 600px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             animation: fadeInScale 0.8s ease;
         }
 
         @keyframes fadeInScale {
             from {
                 opacity: 0;
-                transform: scale(0.9);
+                transform: scale(0.8);
             }
             to {
                 opacity: 1;
@@ -353,19 +154,12 @@
             }
         }
 
-        /* Loader moderne */
-        .loading-container {
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .modern-loader {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(139, 92, 246, 0.2);
-            border-top: 3px solid var(--primary);
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid #667eea;
             border-radius: 50%;
-            margin: 0 auto 1rem;
             animation: spin 1s linear infinite;
         }
 
@@ -374,381 +168,251 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Exemples */
-        .examples-grid {
-            display: grid;
-            gap: 0.75rem;
-            margin-top: 1rem;
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
         }
 
-        .example-item {
+        .status-loading {
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+            animation: pulse 2s infinite;
+        }
+
+        .status-ready {
+            background: linear-gradient(45deg, #4caf50, #2e7d32);
+        }
+
+        .status-error {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .examples-section {
+            margin-top: 2rem;
+        }
+
+        .example-prompt {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
             padding: 1rem;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
+            margin-bottom: 0.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 0.9rem;
-            line-height: 1.4;
         }
 
-        .example-item:hover {
-            background: rgba(139, 92, 246, 0.1);
-            border-color: rgba(139, 92, 246, 0.3);
-            transform: translateX(8px);
+        .example-prompt:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(5px);
         }
 
-        /* Bouton de téléchargement */
-        .download-section {
-            margin-top: 1.5rem;
-            text-align: center;
+        .advanced-options {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1rem;
         }
 
-        .btn-download {
-            padding: 0.75rem 1.5rem;
-            background: var(--gradient-secondary);
+        .range-input {
+            background: transparent;
+        }
+
+        .range-input::-webkit-slider-track {
+            background: rgba(255,255,255,0.2);
+            height: 8px;
+            border-radius: 4px;
+        }
+
+        .range-input::-webkit-slider-thumb {
+            background: #667eea;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
             border: none;
-            border-radius: 12px;
-            color: white;
-            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
         }
 
-        .btn-download:hover {
+        .download-btn {
+            background: var(--primary-gradient);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .download-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(245, 158, 11, 0.3);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
 
-        /* Footer moderne */
-        .footer {
-            background: var(--bg-darker);
-            border-top: 1px solid var(--border);
-            padding: 3rem 2rem 2rem;
-            margin-top: 4rem;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .footer-brand {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
-        }
-
-        .footer-text {
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-        }
-
-        .footer-creator {
-            padding: 1rem 2rem;
-            background: rgba(139, 92, 246, 0.1);
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            border-radius: 50px;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        /* Overlay plein écran pour mobile */
-        .mobile-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--bg-dark);
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            padding: 1rem;
-        }
-
-        .mobile-overlay.active {
-            display: flex;
-        }
-
-        .overlay-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 1rem;
-        }
-
-        .overlay-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .close-overlay {
-            background: none;
-            border: none;
-            color: var(--text);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .close-overlay:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .overlay-content {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: auto;
-        }
-
-        .overlay-image {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            border-radius: 12px;
-        }
-
-        .overlay-actions {
-            padding: 1rem 0;
-            text-align: center;
-            border-top: 1px solid var(--border);
-            margin-top: 1rem;
-        }
-
-        /* Bouton pour voir en plein écran sur mobile */
-        .mobile-fullscreen-btn {
-            display: none;
-            margin-top: 1rem;
-            padding: 0.75rem 1.5rem;
-            background: var(--primary);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-
-        .mobile-fullscreen-btn:hover {
-            background: var(--primary-dark);
-        }
         @media (max-width: 768px) {
-            .grid {
-                grid-template-columns: 1fr;
-                gap: 2rem;
+            .hero-title {
+                font-size: 2.5rem;
             }
-
-            .header-content {
-                padding: 0 1rem;
-            }
-
-            .hero {
-                padding: 2rem 1rem;
-            }
-
             .main-container {
-                padding: 0 1rem 2rem;
+                padding: 1rem;
             }
-
-            .card {
+            .generation-card {
                 padding: 1.5rem;
-            }
-
-            .slider-group {
-                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <i class="fas fa-cube"></i>
-                DGen AI
-            </div>
-            <div class="status-indicator" id="status-indicator">
-                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
-                <span>Prêt</span>
-            </div>
-        </div>
-    </header>
-
-    <!-- Hero -->
-    <section class="hero">
+    <!-- Hero Section -->
+    <div class="hero-section">
         <div class="hero-content">
-            <h1>Créez des images extraordinaires</h1>
-            <p>Transformez vos idées en œuvres d'art grâce à l'intelligence artificielle. Décrivez simplement ce que vous imaginez.</p>
+            <h1 class="hero-title">
+                <i class="fas fa-magic"></i>
+                Générateur AI
+            </h1>
+            <p class="hero-subtitle">Créez des images ultra-réalistes avec l'intelligence artificielle</p>
+            <div id="status-badge" class="status-badge status-ready">
+                <i class="fas fa-check"></i>
+                Générateur Prêt
+            </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Main Content -->
-    <main class="main-container">
-        <div class="grid">
-            <!-- Panneau de création -->
-            <div class="card">
-                <h2 class="card-title">
-                    <i class="fas fa-palette"></i>
-                    Création
-                </h2>
-
-                <form id="generation-form">
-                    <div class="form-group">
-                        <label class="form-label">Description de votre image</label>
-                        <textarea 
-                            class="form-textarea" 
-                            id="prompt" 
-                            placeholder="Décrivez votre vision en détail... Plus c'est précis, meilleur sera le résultat !"
-                            required
-                        ></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">À éviter (optionnel)</label>
-                        <textarea 
-                            class="form-textarea" 
-                            id="negative-prompt" 
-                            placeholder="Éléments à exclure de l'image..."
-                            style="min-height: 80px;"
-                        ></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Style de génération</label>
-                        <select class="form-select" id="api-choice">
-                            <option value="auto">✨ Automatique (Recommandé)</option>
-                            <option value="artistic">🎨 Artistique</option>
-                            <option value="realistic">📸 Réaliste</option>
-                            <option value="creative">🌟 Créatif</option>
-                        </select>
-                    </div>
-
-                    <div class="advanced-section">
-                        <div class="advanced-title">
-                            <i class="fas fa-sliders-h"></i>
-                            Paramètres avancés
+    <!-- Main Container -->
+    <div class="main-container">
+        <div class="row">
+            <!-- Generation Panel -->
+            <div class="col-lg-6">
+                <div class="generation-card">
+                    <h3 class="mb-4">
+                        <i class="fas fa-paint-brush"></i>
+                        Création d'Image
+                    </h3>
+                    
+                    <form id="generation-form">
+                        <!-- Prompt Principal -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Prompt (Description)</label>
+                            <textarea 
+                                class="form-control" 
+                                id="prompt" 
+                                rows="3" 
+                                placeholder="Décrivez l'image que vous voulez générer... (ex: un dragon majestueux volant au-dessus d'un château médiéval)"
+                                required
+                            ></textarea>
                         </div>
-                        
-                        <div class="slider-group">
-                            <div class="slider-container">
-                                <div class="slider-label">
-                                    <span>Qualité</span>
-                                    <span class="slider-value" id="steps-value">25</span>
+
+                        <!-- Prompt Négatif -->
+                        <div class="mb-3">
+                            <label class="form-label">Prompt Négatif (Optionnel)</label>
+                            <textarea 
+                                class="form-control" 
+                                id="negative-prompt" 
+                                rows="2" 
+                                placeholder="Ce que vous ne voulez PAS voir... (ex: flou, déformé, mauvaise qualité)"
+                            ></textarea>
+                        </div>
+
+                        <!-- Sélection API -->
+                        <div class="mb-3">
+                            <label class="form-label">API de Génération</label>
+                            <select class="form-select" id="api-choice">
+                                <option value="auto" selected>🎯 Auto (Meilleur résultat)</option>
+                                <option value="pollinations">🎨 Pollinations AI (Rapide)</option>
+                                <option value="huggingface">🤗 Hugging Face (Qualité)</option>
+                            </select>
+                        </div>
+
+                        <!-- Options Avancées -->
+                        <div class="advanced-options">
+                            <h6><i class="fas fa-cogs"></i> Options Avancées</h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Étapes: <span id="steps-value">25</span></label>
+                                    <input type="range" class="form-range range-input" id="steps" min="10" max="50" value="25">
                                 </div>
-                                <input type="range" class="range-slider" id="steps" min="10" max="50" value="25">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Guidance: <span id="guidance-value">7.5</span></label>
+                                    <input type="range" class="form-range range-input" id="guidance" min="1" max="20" step="0.5" value="7.5">
+                                </div>
                             </div>
                             
-                            <div class="slider-container">
-                                <div class="slider-label">
-                                    <span>Créativité</span>
-                                    <span class="slider-value" id="guidance-value">7.5</span>
-                                </div>
-                                <input type="range" class="range-slider" id="guidance" min="1" max="20" step="0.5" value="7.5">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="slider-group">
-                                <div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
                                     <label class="form-label">Largeur</label>
                                     <select class="form-select" id="width">
-                                        <option value="512">512px</option>
-                                        <option value="768" selected>768px</option>
+                                        <option value="512" selected>512px</option>
+                                        <option value="768">768px</option>
                                         <option value="1024">1024px</option>
                                     </select>
                                 </div>
-                                <div>
+                                <div class="col-md-6 mb-3">
                                     <label class="form-label">Hauteur</label>
                                     <select class="form-select" id="height">
-                                        <option value="512">512px</option>
-                                        <option value="768" selected>768px</option>
+                                        <option value="512" selected>512px</option>
+                                        <option value="768">768px</option>
                                         <option value="1024">1024px</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <button type="submit" class="btn-primary" id="generate-btn">
-                        <i class="fas fa-magic"></i>
-                        Générer l'image
-                    </button>
-                </form>
+                        <button type="submit" class="btn btn-generate w-100" id="generate-btn" disabled>
+                            <i class="fas fa-magic"></i>
+                            Générer l'Image
+                        </button>
+                    </form>
+                </div>
 
-                <!-- Exemples -->
-                <div style="margin-top: 2rem;">
-                    <h3 class="card-title">
-                        <i class="fas fa-lightbulb"></i>
-                        Exemples d'inspiration
-                    </h3>
-                    <div class="examples-grid" id="examples-container">
-                        <div class="loading-container">
-                            <div class="modern-loader"></div>
-                            <p>Chargement des exemples...</p>
+                <!-- Examples Section -->
+                <div class="generation-card examples-section">
+                    <h4><i class="fas fa-lightbulb"></i> Exemples de Prompts</h4>
+                    <div id="examples-container">
+                        <div class="text-center">
+                            <div class="loading-spinner"></div>
+                            <p class="mt-2">Chargement des exemples...</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Panneau de résultat -->
-            <div class="card">
-                <h2 class="card-title">
-                    <i class="fas fa-image"></i>
-                    Résultat
-                </h2>
-
-                <div class="result-area" id="image-result">
-                    <div class="result-placeholder">
-                        <i class="fas fa-camera"></i>
-                        <p>Votre création apparaîtra ici</p>
+            <!-- Result Panel -->
+            <div class="col-lg-6">
+                <div class="generation-card">
+                    <h3 class="mb-4">
+                        <i class="fas fa-image"></i>
+                        Résultat
+                    </h3>
+                    
+                    <div class="image-result" id="image-result">
+                        <div class="text-center">
+                            <i class="fas fa-image fa-3x mb-3" style="opacity: 0.3;"></i>
+                            <p class="mb-0" style="opacity: 0.7;">Votre image générée apparaîtra ici</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-brand">AI Generator</div>
-            <p class="footer-text">
-                Donnez vie à votre imagination avec la puissance de l'intelligence artificielle
-            </p>
-            <div class="footer-creator">
-                <i class="fas fa-code"></i>
-                Créé par Durand
-            </div>
-        </div>
-    </footer>
-
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // État de l'application
-        let modelLoaded = true;
+        let modelLoaded = false;
         let generating = false;
 
         // Éléments DOM
-        const statusIndicator = document.getElementById('status-indicator');
+        const statusBadge = document.getElementById('status-badge');
         const generateBtn = document.getElementById('generate-btn');
         const generationForm = document.getElementById('generation-form');
         const imageResult = document.getElementById('image-result');
@@ -767,96 +431,94 @@
             guidanceValue.textContent = guidanceSlider.value;
         });
 
-        // Chargement des exemples
-        function loadExamples() {
-            const examples = [
-                "Un coucher de soleil majestueux sur une montagne enneigée, style peinture à l'huile",
-                "Un dragon mystique volant au-dessus d'une forêt enchantée, lumière dorée",
-                "Portrait d'une femme élégante avec des cheveux violets, style art nouveau",
-                "Une ville futuriste avec des gratte-ciel lumineux et des voitures volantes",
-                "Un chat astronaute flottant dans l'espace avec des étoiles scintillantes",
-                "Un jardin japonais paisible avec un pont en bois et des cerisiers en fleurs",
-                "Une créature fantastique mi-loup mi-phoenix aux couleurs flamboyantes",
-                "Un océan turquoise avec des îles tropicales vues du ciel, hyperréaliste"
-            ];
-
-            examplesContainer.innerHTML = '';
-            examples.forEach(example => {
-                const div = document.createElement('div');
-                div.className = 'example-item';
-                div.textContent = example;
-                div.addEventListener('click', () => {
-                    document.getElementById('prompt').value = example;
-                });
-                examplesContainer.appendChild(div);
-            });
+        // Vérification du statut du modèle
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                if (data.loaded && !modelLoaded) {
+                    modelLoaded = true;
+                    statusBadge.className = 'status-badge status-ready';
+                    statusBadge.innerHTML = `<i class="fas fa-check"></i> ${data.current_api || 'Multi-API'} Ready`;
+                    generateBtn.disabled = false;
+                } else if (data.loading) {
+                    statusBadge.className = 'status-badge status-loading';
+                    statusBadge.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...';
+                }
+            } catch (error) {
+                statusBadge.className = 'status-badge status-error';
+                statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erreur de connexion';
+            }
         }
 
-        // Simulation de génération d'image
+        // Chargement des exemples
+        async function loadExamples() {
+            try {
+                const response = await fetch('/api/examples');
+                const data = await response.json();
+                
+                examplesContainer.innerHTML = '';
+                data.examples.forEach(example => {
+                    const div = document.createElement('div');
+                    div.className = 'example-prompt';
+                    div.textContent = example;
+                    div.addEventListener('click', () => {
+                        document.getElementById('prompt').value = example;
+                    });
+                    examplesContainer.appendChild(div);
+                });
+            } catch (error) {
+                examplesContainer.innerHTML = '<p class="text-danger">Erreur lors du chargement des exemples</p>';
+            }
+        }
+
+        // Génération d'image
         async function generateImage(formData) {
             try {
-                // Simulation d'un délai de génération
-                await new Promise(resolve => setTimeout(resolve, 3000 + Math.random() * 2000));
-
-                // Simulation d'une image générée (placeholder)
-                const canvas = document.createElement('canvas');
-                canvas.width = formData.width;
-                canvas.height = formData.height;
-                const ctx = canvas.getContext('2d');
-                
-                // Gradient coloré simulant une image générée
-                const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-                const colors = ['#8B5CF6', '#06B6D4', '#F59E0B', '#EF4444', '#10B981'];
-                colors.forEach((color, i) => {
-                    gradient.addColorStop(i / (colors.length - 1), color);
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
                 });
-                
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                // Ajout de formes aléatoires pour simuler du contenu
-                for (let i = 0; i < 20; i++) {
-                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.3})`;
-                    ctx.beginPath();
-                    ctx.arc(
-                        Math.random() * canvas.width,
-                        Math.random() * canvas.height,
-                        Math.random() * 50 + 10,
-                        0,
-                        2 * Math.PI
-                    );
-                    ctx.fill();
-                }
 
-                const imageData = canvas.toDataURL();
+                const data = await response.json();
 
-                // Affichage du résultat
-                imageResult.innerHTML = `
-                    <div style="width: 100%; text-align: center;">
-                        <img src="${imageData}" alt="Image générée" class="generated-image">
-                        <div class="download-section">
-                            <button class="btn-download" onclick="downloadImage('${imageData}')">
-                                <i class="fas fa-download"></i>
-                                Télécharger
+                if (data.success) {
+                    // Affichage de l'image
+                    imageResult.innerHTML = `
+                        <div class="text-center">
+                            <img src="${data.image}" alt="Image générée" class="generated-image">
+                            <div class="mt-3">
+                                <small class="text-success">
+                                    <i class="fas fa-check-circle"></i> 
+                                    Généré avec ${data.api_used} API
+                                </small>
+                            </div>
+                            <button class="btn download-btn" onclick="downloadImage('${data.image}', '${data.prompt}')">
+                                <i class="fas fa-download"></i> Télécharger
                             </button>
                         </div>
-                    </div>
-                `;
-                imageResult.classList.add('has-image');
-
+                    `;
+                    imageResult.classList.add('has-image');
+                } else {
+                    throw new Error(data.error || 'Erreur inconnue');
+                }
             } catch (error) {
                 imageResult.innerHTML = `
-                    <div class="result-placeholder" style="color: #EF4444;">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <p>Erreur lors de la génération</p>
+                    <div class="text-center text-danger">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                        <p>Erreur: ${error.message}</p>
                     </div>
                 `;
                 imageResult.classList.remove('has-image');
             }
         }
 
-        // Fonction de téléchargement
-        function downloadImage(dataUrl) {
+        // Téléchargement d'image
+        function downloadImage(dataUrl, prompt) {
             const link = document.createElement('a');
             link.href = dataUrl;
             link.download = `ai-generated-${Date.now()}.png`;
@@ -869,24 +531,21 @@
         generationForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            if (generating) return;
+            if (!modelLoaded || generating) return;
 
             generating = true;
             generateBtn.disabled = true;
-            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération en cours...';
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération...';
 
-            // Affichage du loader
+            // Affichage du spinner
             imageResult.innerHTML = `
-                <div class="loading-container">
-                    <div class="modern-loader"></div>
-                    <p style="color: var(--primary); font-weight: 600;">Création en cours...</p>
-                    <p style="font-size: 0.875rem; color: var(--text-muted);">Cela peut prendre quelques instants</p>
+                <div class="text-center">
+                    <div class="loading-spinner"></div>
+                    <p class="mt-3">🎨 Génération en cours...</p>
+                    <small class="text-muted">Utilisation d'APIs d'IA professionnelles<br>Temps estimé: 15-45 secondes</small>
                 </div>
             `;
             imageResult.classList.remove('has-image');
-
-            // Mise à jour du statut
-            statusIndicator.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 0.5rem;"></i> <span>Génération...</span>';
 
             // Préparation des données
             const formData = {
@@ -902,16 +561,23 @@
             // Génération
             await generateImage(formData);
 
-            // Réactivation
+            // Réactivation du bouton
             generating = false;
             generateBtn.disabled = false;
-            generateBtn.innerHTML = '<i class="fas fa-magic"></i> Générer l\'image';
-            statusIndicator.innerHTML = '<i class="fas fa-circle" style="font-size: 0.5rem;"></i> <span>Prêt</span>';
+            generateBtn.innerHTML = '<i class="fas fa-magic"></i> Générer l\'Image';
         });
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', () => {
+            // Le générateur est toujours prêt maintenant
+            modelLoaded = true;
+            generateBtn.disabled = false;
+            
+            checkStatus();
             loadExamples();
+            
+            // Vérification périodique du statut
+            setInterval(checkStatus, 5000);
         });
     </script>
 </body>
