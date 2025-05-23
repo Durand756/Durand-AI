@@ -3,112 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Générateur d'Images AI Ultra-Réalistes</title>
+    <title>DGen AI - Générateur d'Images Ultra-Réalistes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --dark-bg: #1a1a2e;
-            --card-bg: #16213e;
-            --text-light: #eee;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1b3e;
+            --bg-tertiary: #252659;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: rgba(255, 255, 255, 0.1);
+            --shadow: rgba(0, 0, 0, 0.25);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
 
         body {
-            background: var(--dark-bg);
-            color: var(--text-light);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        .hero-section {
-            background: var(--primary-gradient);
-            padding: 4rem 0;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-section::before {
-            content: '';
-            position: absolute;
+        /* Background Animation */
+        .bg-animation {
+            position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            width: 100%;
+            height: 100%;
+            z-index: -1;
             opacity: 0.3;
         }
 
-        .hero-content {
-            position: relative;
-            z-index: 2;
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
         }
 
-        .hero-title {
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        .shape {
+            position: absolute;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+            opacity: 0.1;
         }
 
-        .hero-subtitle {
-            font-size: 1.3rem;
-            opacity: 0.9;
-            margin-bottom: 2rem;
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
         }
 
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 10%;
+            animation-delay: -5s;
+        }
+
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 20%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-30px) rotate(120deg); }
+            66% { transform: translateY(30px) rotate(240deg); }
+        }
+
+        /* Header */
+        .header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Content */
         .main-container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 2rem 1rem;
+            min-height: calc(100vh - 140px);
         }
 
-        .generation-card {
-            background: var(--card-bg);
-            border-radius: 20px;
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
             padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px -12px var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 32px 64px -12px var(--shadow);
+        }
+
+        .form-floating {
+            position: relative;
         }
 
         .form-control, .form-select {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: var(--text-light);
-            border-radius: 10px;
-            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            color: var(--text-primary);
+            padding: 1rem;
+            font-size: 1rem;
             transition: all 0.3s ease;
         }
 
         .form-control:focus, .form-select:focus {
-            background: rgba(255,255,255,0.15);
-            border-color: #667eea;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
-            color: var(--text-light);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            color: var(--text-primary);
         }
 
         .form-control::placeholder {
-            color: rgba(255,255,255,0.6);
+            color: var(--text-muted);
         }
 
+        .form-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Modern Button */
         .btn-generate {
-            background: var(--secondary-gradient);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             border: none;
+            border-radius: 16px;
             padding: 1rem 2rem;
-            border-radius: 50px;
             font-weight: 600;
             font-size: 1.1rem;
-            transition: all 0.3s ease;
+            color: white;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-generate::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-generate:hover::before {
+            left: 100%;
         }
 
         .btn-generate:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(240, 147, 251, 0.4);
+            box-shadow: 0 20px 40px -12px rgba(99, 102, 241, 0.4);
         }
 
         .btn-generate:disabled {
@@ -117,36 +233,97 @@
             transform: none;
         }
 
-        .image-result {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 2rem;
-            text-align: center;
-            min-height: 300px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px dashed rgba(255,255,255,0.2);
+        /* Advanced Options */
+        .advanced-toggle {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .advanced-toggle:hover {
+            border-color: var(--primary);
+            color: var(--text-primary);
+        }
+
+        .advanced-options {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
             transition: all 0.3s ease;
         }
 
-        .image-result.has-image {
-            border: 2px solid rgba(102, 126, 234, 0.5);
-            background: rgba(102, 126, 234, 0.1);
+        .advanced-options.show {
+            opacity: 1;
+            max-height: 500px;
+        }
+
+        /* Range Sliders */
+        .range-container {
+            position: relative;
+            margin: 1rem 0;
+        }
+
+        .form-range {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .form-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Result Area */
+        .result-area {
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px dashed var(--border);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .result-area.has-image {
+            border: 2px solid var(--primary);
+            background: rgba(99, 102, 241, 0.05);
         }
 
         .generated-image {
             max-width: 100%;
-            max-height: 600px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-height: 500px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px -12px var(--shadow);
             animation: fadeInScale 0.8s ease;
         }
 
         @keyframes fadeInScale {
             from {
                 opacity: 0;
-                transform: scale(0.8);
+                transform: scale(0.9);
             }
             to {
                 opacity: 1;
@@ -154,11 +331,19 @@
             }
         }
 
-        .loading-spinner {
-            width: 3rem;
-            height: 3rem;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top: 3px solid #667eea;
+        /* Loading Animation */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .modern-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -168,186 +353,253 @@
             100% { transform: rotate(360deg); }
         }
 
-        .status-badge {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-bottom: 1rem;
-        }
-
-        .status-loading {
-            background: linear-gradient(45deg, #ff9800, #f57c00);
-            animation: pulse 2s infinite;
-        }
-
-        .status-ready {
-            background: linear-gradient(45deg, #4caf50, #2e7d32);
-        }
-
-        .status-error {
-            background: linear-gradient(45deg, #f44336, #d32f2f);
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        .examples-section {
-            margin-top: 2rem;
-        }
-
-        .example-prompt {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 10px;
+        /* Examples */
+        .example-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
             padding: 1rem;
-            margin-bottom: 0.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
         }
 
-        .example-prompt:hover {
-            background: rgba(255,255,255,0.2);
-            transform: translateX(5px);
+        .example-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            transform: translateX(8px);
         }
 
-        .advanced-options {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-top: 1rem;
+        /* Mobile Modal */
+        .mobile-result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            z-index: 1000;
+            overflow-y: auto;
         }
 
-        .range-input {
-            background: transparent;
+        .mobile-result-modal.show {
+            display: block;
         }
 
-        .range-input::-webkit-slider-track {
-            background: rgba(255,255,255,0.2);
-            height: 8px;
-            border-radius: 4px;
+        .modal-header-mobile {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1001;
         }
 
-        .range-input::-webkit-slider-thumb {
-            background: #667eea;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
+        .modal-content-mobile {
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .close-modal {
+            background: none;
             border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            border-radius: 8px;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
 
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Download Button */
         .download-btn {
-            background: var(--primary-gradient);
+            background: linear-gradient(135deg, var(--accent), var(--primary));
             border: none;
+            border-radius: 12px;
             padding: 0.75rem 1.5rem;
-            border-radius: 25px;
             color: white;
             font-weight: 500;
-            transition: all 0.3s ease;
             margin-top: 1rem;
+            transition: all 0.3s ease;
         }
 
         .download-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 20px -8px rgba(6, 182, 212, 0.4);
         }
 
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 2rem 0;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .creator-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 500;
+        }
+
+        /* Mobile Responsive */
         @media (max-width: 768px) {
-            .hero-title {
-                font-size: 2.5rem;
-            }
             .main-container {
                 padding: 1rem;
             }
-            .generation-card {
+
+            .glass-card {
                 padding: 1.5rem;
+                border-radius: 20px;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .result-area {
+                min-height: 200px;
+                padding: 2rem 1rem;
+            }
+
+            .mobile-only {
+                display: block !important;
+            }
+
+            .desktop-only {
+                display: none !important;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-only {
+                display: none !important;
+            }
+
+            .desktop-only {
+                display: block !important;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Hero Section -->
-    <div class="hero-section">
-        <div class="hero-content">
-            <h1 class="hero-title">
-                <i class="fas fa-magic"></i>
-                Générateur AI
-            </h1>
-            <p class="hero-subtitle">Créez des images ultra-réalistes avec l'intelligence artificielle</p>
-            <div id="status-badge" class="status-badge status-ready">
-                <i class="fas fa-check"></i>
-                Générateur Prêt
-            </div>
+    <!-- Background Animation -->
+    <div class="bg-animation">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
         </div>
     </div>
 
-    <!-- Main Container -->
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="logo">
+                    <i class="fas fa-magic me-2"></i>
+                    DGen AI
+                </div>
+                <div class="status-indicator" id="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>Prêt</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
     <div class="main-container">
-        <div class="row">
+        <div class="row g-4">
             <!-- Generation Panel -->
             <div class="col-lg-6">
-                <div class="generation-card">
-                    <h3 class="mb-4">
-                        <i class="fas fa-paint-brush"></i>
+                <div class="glass-card">
+                    <h2 class="mb-4 d-flex align-items-center gap-2">
+                        <i class="fas fa-palette text-primary"></i>
                         Création d'Image
-                    </h3>
+                    </h2>
                     
                     <form id="generation-form">
-                        <!-- Prompt Principal -->
+                        <!-- Main Prompt -->
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Prompt (Description)</label>
+                            <label class="form-label">Description de l'image</label>
                             <textarea 
                                 class="form-control" 
                                 id="prompt" 
                                 rows="3" 
-                                placeholder="Décrivez l'image que vous voulez générer... (ex: un dragon majestueux volant au-dessus d'un château médiéval)"
+                                placeholder="Décrivez votre image en détail..."
                                 required
                             ></textarea>
                         </div>
 
-                        <!-- Prompt Négatif -->
+                        <!-- Negative Prompt -->
                         <div class="mb-3">
-                            <label class="form-label">Prompt Négatif (Optionnel)</label>
+                            <label class="form-label">Éléments à éviter (optionnel)</label>
                             <textarea 
                                 class="form-control" 
                                 id="negative-prompt" 
                                 rows="2" 
-                                placeholder="Ce que vous ne voulez PAS voir... (ex: flou, déformé, mauvaise qualité)"
+                                placeholder="Ce que vous ne voulez pas voir..."
                             ></textarea>
                         </div>
 
-                        <!-- Sélection API -->
-                        <div class="mb-3">
-                            <label class="form-label">API de Génération</label>
+                        <!-- API Selection -->
+                        <div class="mb-4">
+                            <label class="form-label">Mode de génération</label>
                             <select class="form-select" id="api-choice">
-                                <option value="auto" selected>🎯 Auto (Meilleur résultat)</option>
-                                <option value="pollinations">🎨 Pollinations AI (Rapide)</option>
-                                <option value="huggingface">🤗 Hugging Face (Qualité)</option>
+                                <option value="auto" selected>🎯 Automatique (Recommandé)</option>
+                                <option value="pollinations">⚡ Rapide</option>
+                                <option value="huggingface">🎨 Haute Qualité</option>
                             </select>
                         </div>
 
-                        <!-- Options Avancées -->
-                        <div class="advanced-options">
-                            <h6><i class="fas fa-cogs"></i> Options Avancées</h6>
-                            
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Étapes: <span id="steps-value">25</span></label>
-                                    <input type="range" class="form-range range-input" id="steps" min="10" max="50" value="25">
+                        <!-- Advanced Options Toggle -->
+                        <button type="button" class="advanced-toggle mb-3" onclick="toggleAdvanced()">
+                            <i class="fas fa-cog me-2"></i>
+                            Options avancées
+                            <i class="fas fa-chevron-down ms-auto" id="advanced-chevron"></i>
+                        </button>
+
+                        <!-- Advanced Options -->
+                        <div class="advanced-options" id="advanced-options">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="range-container">
+                                        <label class="form-label d-flex justify-content-between">
+                                            <span>Étapes</span>
+                                            <span id="steps-value">25</span>
+                                        </label>
+                                        <input type="range" class="form-range" id="steps" min="10" max="50" value="25">
+                                    </div>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Guidance: <span id="guidance-value">7.5</span></label>
-                                    <input type="range" class="form-range range-input" id="guidance" min="1" max="20" step="0.5" value="7.5">
+                                <div class="col-md-6">
+                                    <div class="range-container">
+                                        <label class="form-label d-flex justify-content-between">
+                                            <span>Guidance</span>
+                                            <span id="guidance-value">7.5</span>
+                                        </label>
+                                        <input type="range" class="form-range" id="guidance" min="1" max="20" step="0.5" value="7.5">
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6">
                                     <label class="form-label">Largeur</label>
                                     <select class="form-select" id="width">
                                         <option value="512" selected>512px</option>
@@ -355,7 +607,7 @@
                                         <option value="1024">1024px</option>
                                     </select>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6">
                                     <label class="form-label">Hauteur</label>
                                     <select class="form-select" id="height">
                                         <option value="512" selected>512px</option>
@@ -366,37 +618,63 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-generate w-100" id="generate-btn" disabled>
-                            <i class="fas fa-magic"></i>
+                        <button type="submit" class="btn-generate" id="generate-btn" disabled>
+                            <i class="fas fa-magic me-2"></i>
                             Générer l'Image
                         </button>
                     </form>
                 </div>
 
-                <!-- Examples Section -->
-                <div class="generation-card examples-section">
-                    <h4><i class="fas fa-lightbulb"></i> Exemples de Prompts</h4>
+                <!-- Examples -->
+                <div class="glass-card mt-4">
+                    <h3 class="mb-3 d-flex align-items-center gap-2">
+                        <i class="fas fa-lightbulb text-warning"></i>
+                        Exemples d'inspiration
+                    </h3>
                     <div id="examples-container">
-                        <div class="text-center">
-                            <div class="loading-spinner"></div>
-                            <p class="mt-2">Chargement des exemples...</p>
+                        <div class="loading-container">
+                            <div class="modern-spinner"></div>
+                            <p class="text-muted">Chargement des exemples...</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Result Panel -->
-            <div class="col-lg-6">
-                <div class="generation-card">
-                    <h3 class="mb-4">
-                        <i class="fas fa-image"></i>
+            <!-- Result Panel - Desktop -->
+            <div class="col-lg-6 desktop-only">
+                <div class="glass-card">
+                    <h2 class="mb-4 d-flex align-items-center gap-2">
+                        <i class="fas fa-image text-accent"></i>
                         Résultat
-                    </h3>
+                    </h2>
                     
-                    <div class="image-result" id="image-result">
+                    <div class="result-area" id="image-result">
                         <div class="text-center">
-                            <i class="fas fa-image fa-3x mb-3" style="opacity: 0.3;"></i>
-                            <p class="mb-0" style="opacity: 0.7;">Votre image générée apparaîtra ici</p>
+                            <i class="fas fa-image fa-3x mb-3 text-muted"></i>
+                            <p class="text-muted mb-0">Votre création apparaîtra ici</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Section - Mobile -->
+            <div class="col-12 mobile-only">
+                <div class="glass-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="mb-0 d-flex align-items-center gap-2">
+                            <i class="fas fa-image text-accent"></i>
+                            Résultat
+                        </h3>
+                        <button class="btn btn-sm btn-outline-light" onclick="openMobileModal()" id="mobile-view-btn" style="display: none;">
+                            <i class="fas fa-expand"></i>
+                            Voir en grand
+                        </button>
+                    </div>
+                    
+                    <div class="result-area" id="image-result-mobile">
+                        <div class="text-center">
+                            <i class="fas fa-image fa-2x mb-2 text-muted"></i>
+                            <p class="text-muted mb-0 small">Votre création apparaîtra ici</p>
                         </div>
                     </div>
                 </div>
@@ -404,23 +682,92 @@
         </div>
     </div>
 
+    <!-- Mobile Modal -->
+    <div class="mobile-result-modal" id="mobile-modal">
+        <div class="modal-header-mobile">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Image générée</h4>
+                <button class="close-modal" onclick="closeMobileModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="modal-content-mobile" id="modal-image-content">
+            <!-- Content will be inserted here -->
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="creator-badge">
+                <i class="fas fa-code text-primary"></i>
+                <span>Créé par <strong>Durand</strong></span>
+            </div>
+            <p class="text-muted mt-3 mb-0 small">
+                © 2024 DGen AI. Générateur d'images alimenté par l'intelligence artificielle.
+            </p>
+        </div>
+    </footer>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // État de l'application
         let modelLoaded = false;
         let generating = false;
+        let currentImageData = null;
 
         // Éléments DOM
-        const statusBadge = document.getElementById('status-badge');
+        const statusIndicator = document.getElementById('status-indicator');
         const generateBtn = document.getElementById('generate-btn');
         const generationForm = document.getElementById('generation-form');
         const imageResult = document.getElementById('image-result');
+        const imageResultMobile = document.getElementById('image-result-mobile');
         const stepsSlider = document.getElementById('steps');
         const guidanceSlider = document.getElementById('guidance');
         const stepsValue = document.getElementById('steps-value');
         const guidanceValue = document.getElementById('guidance-value');
         const examplesContainer = document.getElementById('examples-container');
+        const mobileModal = document.getElementById('mobile-modal');
+        const modalImageContent = document.getElementById('modal-image-content');
+        const mobileViewBtn = document.getElementById('mobile-view-btn');
+
+        // Fonctions utilitaires
+        function toggleAdvanced() {
+            const options = document.getElementById('advanced-options');
+            const chevron = document.getElementById('advanced-chevron');
+            
+            if (options.classList.contains('show')) {
+                options.classList.remove('show');
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                options.classList.add('show');
+                chevron.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        function openMobileModal() {
+            if (currentImageData) {
+                modalImageContent.innerHTML = currentImageData.modalContent;
+                mobileModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeMobileModal() {
+            mobileModal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        function downloadImage(dataUrl, prompt) {
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `dgen-ai-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
 
         // Mise à jour des valeurs des sliders
         stepsSlider.addEventListener('input', () => {
@@ -431,7 +778,7 @@
             guidanceValue.textContent = guidanceSlider.value;
         });
 
-        // Vérification du statut du modèle
+        // Vérification du statut
         async function checkStatus() {
             try {
                 const response = await fetch('/api/status');
@@ -439,16 +786,13 @@
                 
                 if (data.loaded && !modelLoaded) {
                     modelLoaded = true;
-                    statusBadge.className = 'status-badge status-ready';
-                    statusBadge.innerHTML = `<i class="fas fa-check"></i> ${data.current_api || 'Multi-API'} Ready`;
+                    statusIndicator.innerHTML = '<div class="status-dot"></div><span>Prêt</span>';
                     generateBtn.disabled = false;
                 } else if (data.loading) {
-                    statusBadge.className = 'status-badge status-loading';
-                    statusBadge.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...';
+                    statusIndicator.innerHTML = '<div class="modern-spinner" style="width: 12px; height: 12px; border-width: 2px;"></div><span>Chargement...</span>';
                 }
             } catch (error) {
-                statusBadge.className = 'status-badge status-error';
-                statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erreur de connexion';
+                statusIndicator.innerHTML = '<i class="fas fa-exclamation-triangle text-warning"></i><span>Erreur</span>';
             }
         }
 
@@ -461,8 +805,8 @@
                 examplesContainer.innerHTML = '';
                 data.examples.forEach(example => {
                     const div = document.createElement('div');
-                    div.className = 'example-prompt';
-                    div.textContent = example;
+                    div.className = 'example-item';
+                    div.innerHTML = `<i class="fas fa-quote-left me-2 text-muted"></i>${example}`;
                     div.addEventListener('click', () => {
                         document.getElementById('prompt').value = example;
                     });
@@ -487,44 +831,63 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // Affichage de l'image
-                    imageResult.innerHTML = `
+                    const imageContent = `
                         <div class="text-center">
                             <img src="${data.image}" alt="Image générée" class="generated-image">
                             <div class="mt-3">
-                                <small class="text-success">
-                                    <i class="fas fa-check-circle"></i> 
-                                    Généré avec ${data.api_used} API
-                                </small>
+                                <button class="download-btn" onclick="downloadImage('${data.image}', '${data.prompt}')">
+                                    <i class="fas fa-download me-2"></i>Télécharger
+                                </button>
                             </div>
-                            <button class="btn download-btn" onclick="downloadImage('${data.image}', '${data.prompt}')">
-                                <i class="fas fa-download"></i> Télécharger
-                            </button>
                         </div>
                     `;
+
+                    const modalContent = `
+                        <div class="text-center">
+                            <img src="${data.image}" alt="Image générée" style="max-width: 100%; height: auto; border-radius: 16px; box-shadow: 0 20px 40px -12px rgba(0,0,0,0.3);">
+                            <div class="mt-4">
+                                <button class="download-btn" onclick="downloadImage('${data.image}', '${data.prompt}')">
+                                    <i class="fas fa-download me-2"></i>Télécharger l'image
+                                </button>
+                            </div>
+                            <p class="text-muted mt-3 small">"${data.prompt}"</p>
+                        </div>
+                    `;
+
+                    // Desktop
+                    imageResult.innerHTML = imageContent;
                     imageResult.classList.add('has-image');
+
+                    // Mobile
+                    imageResultMobile.innerHTML = imageContent;
+                    imageResultMobile.classList.add('has-image');
+                    mobileViewBtn.style.display = 'block';
+
+                    // Stocker les données pour le modal
+                    currentImageData = {
+                        image: data.image,
+                        prompt: data.prompt,
+                        modalContent: modalContent
+                    };
+
                 } else {
                     throw new Error(data.error || 'Erreur inconnue');
                 }
             } catch (error) {
-                imageResult.innerHTML = `
+                const errorContent = `
                     <div class="text-center text-danger">
                         <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
                         <p>Erreur: ${error.message}</p>
+                        <small class="text-muted">Veuillez réessayer dans quelques instants</small>
                     </div>
                 `;
+                
+                imageResult.innerHTML = errorContent;
                 imageResult.classList.remove('has-image');
+                imageResultMobile.innerHTML = errorContent;
+                imageResultMobile.classList.remove('has-image');
+                mobileViewBtn.style.display = 'none';
             }
-        }
-
-        // Téléchargement d'image
-        function downloadImage(dataUrl, prompt) {
-            const link = document.createElement('a');
-            link.href = dataUrl;
-            link.download = `ai-generated-${Date.now()}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
 
         // Gestion du formulaire
@@ -535,17 +898,22 @@
 
             generating = true;
             generateBtn.disabled = true;
-            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération...';
+            generateBtn.innerHTML = '<div class="modern-spinner" style="width: 20px; height: 20px; border-width: 2px; display: inline-block; margin-right: 8px;"></div>Génération...';
 
-            // Affichage du spinner
-            imageResult.innerHTML = `
-                <div class="text-center">
-                    <div class="loading-spinner"></div>
-                    <p class="mt-3">🎨 Génération en cours...</p>
-                    <small class="text-muted">Utilisation d'APIs d'IA professionnelles<br>Temps estimé: 15-45 secondes</small>
+            // Affichage du loading
+            const loadingContent = `
+                <div class="loading-container">
+                    <div class="modern-spinner"></div>
+                    <p class="mb-2">🎨 Création en cours...</p>
+                    <small class="text-muted">Cela peut prendre quelques instants</small>
                 </div>
             `;
+            
+            imageResult.innerHTML = loadingContent;
             imageResult.classList.remove('has-image');
+            imageResultMobile.innerHTML = loadingContent;
+            imageResultMobile.classList.remove('has-image');
+            mobileViewBtn.style.display = 'none';
 
             // Préparation des données
             const formData = {
@@ -564,12 +932,26 @@
             // Réactivation du bouton
             generating = false;
             generateBtn.disabled = false;
-            generateBtn.innerHTML = '<i class="fas fa-magic"></i> Générer l\'Image';
+            generateBtn.innerHTML = '<i class="fas fa-magic me-2"></i>Générer l\'Image';
+        });
+
+        // Fermeture du modal mobile avec Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && mobileModal.classList.contains('show')) {
+                closeMobileModal();
+            }
+        });
+
+        // Fermeture du modal en cliquant à l'extérieur
+        mobileModal.addEventListener('click', (e) => {
+            if (e.target === mobileModal) {
+                closeMobileModal();
+            }
         });
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', () => {
-            // Le générateur est toujours prêt maintenant
+            // Le générateur est toujours prêt
             modelLoaded = true;
             generateBtn.disabled = false;
             
@@ -578,7 +960,37 @@
             
             // Vérification périodique du statut
             setInterval(checkStatus, 5000);
+
+            // Animation d'entrée
+            document.querySelectorAll('.glass-card').forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
         });
+
+        // Smooth scroll pour mobile
+        function scrollToResult() {
+            if (window.innerWidth <= 768) {
+                document.getElementById('image-result-mobile').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        }
+
+        // Auto-scroll après génération sur mobile
+        const originalGenerateImage = generateImage;
+        generateImage = async function(formData) {
+            await originalGenerateImage(formData);
+            if (window.innerWidth <= 768 && currentImageData) {
+                setTimeout(scrollToResult, 500);
+            }
+        };
     </script>
 </body>
 </html>
