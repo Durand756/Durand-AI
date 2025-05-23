@@ -4,188 +4,232 @@ import base64
 import io
 import os
 import time
-from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
-import random
 import json
 from datetime import datetime
 import threading
+from PIL import Image
 
 app = Flask(__name__)
 
-# Configuration
+# Configuration globale
 class Config:
     def __init__(self):
         self.ready = True
-        self.using_huggingface = False
+        self.apis = {
+            'pollinations': 'https://image.pollinations.ai/prompt/',
+            'picsum': 'https://picsum.photos/',
+            'replicate': None,  # Nécessite une clé API
+            'huggingface': 'https://api-inference.huggingface.co/models/'
+        }
         self.hf_token = os.environ.get('HUGGINGFACE_TOKEN', '')
-
+        self.current_api = 'pollinations'  # API par défaut
+        
 config = Config()
 
-# Générateur d'images procédurales en cas d'absence d'API
-def generate_procedural_image(prompt, width=512, height=512):
-    """Génère une image procédurale basée sur le prompt"""
+def generate_with_pollinations(prompt, width=512, height=512):
+    """Génère une image avec Pollinations AI (gratuit, sans clé)"""
     try:
-        # Création d'une image de base
-        img = Image.new('RGB', (width, height), color=(20, 25, 40))
-        draw = ImageDraw.Draw(img)
+        # Nettoyage et optimisation du prompt
+        clean_prompt = prompt.replace(' ', '%20').replace(',', '%2C')
         
-        # Analyse du prompt pour déterminer le style
-        prompt_lower = prompt.lower()
+        # URL de l'API Pollinations
+        url = f"https://image.pollinations.ai/prompt/{clean_prompt}?width={width}&height={height}&model=flux&enhance=true&nologo=true"
         
-        # Couleurs basées sur les mots-clés
-        colors = []
-        if 'dragon' in prompt_lower or 'fire' in prompt_lower or 'red' in prompt_lower:
-            colors = [(255, 100, 100), (255, 150, 50), (200, 50, 50)]
-        elif 'ocean' in prompt_lower or 'blue' in prompt_lower or 'water' in prompt_lower:
-            colors = [(50, 150, 255), (100, 200, 255), (0, 100, 200)]
-        elif 'forest' in prompt_lower or 'green' in prompt_lower or 'nature' in prompt_lower:
-            colors = [(50, 200, 100), (100, 255, 150), (30, 150, 50)]
-        elif 'sunset' in prompt_lower or 'orange' in prompt_lower:
-            colors = [(255, 150, 50), (255, 100, 100), (255, 200, 100)]
-        elif 'space' in prompt_lower or 'star' in prompt_lower or 'galaxy' in prompt_lower:
-            colors = [(100, 50, 255), (150, 100, 255), (50, 0, 100)]
+        print(f"🎨 Génération avec Pollinations: {prompt}")
+        
+        # Requête avec timeout
+        response = requests.get(url, timeout=60, stream=True)
+        
+        if response.status_code == 200:
+            # Conversion en image PIL
+            image = Image.open(io.BytesIO(response.content))
+            return image, None
         else:
-            colors = [(random.randint(100, 255), random.randint(100, 255), random.randint(100, 255)) for _ in range(3)]
-        
-        # Génération de formes géométriques
-        for _ in range(random.randint(20, 50)):
-            color = random.choice(colors)
-            alpha = random.randint(30, 100)
+            return None, f"Erreur API Pollinations: {response.status_code}"
             
-            # Création d'une image temporaire avec transparence
-            temp_img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
-            temp_draw = ImageDraw.Draw(temp_img)
-            
-            shape_type = random.choice(['circle', 'rectangle', 'polygon'])
-            
-            if shape_type == 'circle':
-                x, y = random.randint(0, width), random.randint(0, height)
-                r = random.randint(10, 100)
-                temp_draw.ellipse([x-r, y-r, x+r, y+r], fill=(*color, alpha))
-            
-            elif shape_type == 'rectangle':
-                x1, y1 = random.randint(0, width//2), random.randint(0, height//2)
-                x2, y2 = x1 + random.randint(50, 200), y1 + random.randint(50, 200)
-                temp_draw.rectangle([x1, y1, x2, y2], fill=(*color, alpha))
-            
-            else:  # polygon
-                points = []
-                for _ in range(random.randint(3, 8)):
-                    points.append((random.randint(0, width), random.randint(0, height)))
-                temp_draw.polygon(points, fill=(*color, alpha))
-            
-            # Fusion avec l'image principale
-            img = Image.alpha_composite(img.convert('RGBA'), temp_img).convert('RGB')
-        
-        # Application d'effets
-        if 'blur' not in prompt_lower and 'sharp' not in prompt_lower:
-            img = img.filter(ImageFilter.GaussianBlur(radius=0.5))
-        
-        if 'bright' in prompt_lower:
-            enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(1.3)
-        
-        if 'contrast' in prompt_lower:
-            enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(1.2)
-        
-        # Ajout de texte artistique
-        try:
-            font_size = max(20, min(width, height) // 20)
-            font = ImageFont.load_default()
-            
-            # Titre basé sur le prompt
-            title = prompt[:30] + "..." if len(prompt) > 30 else prompt
-            text_bbox = draw.textbbox((0, 0), title, font=font)
-            text_width = text_bbox[2] - text_bbox[0]
-            text_x = (width - text_width) // 2
-            text_y = height - 40
-            
-            # Ombre du texte
-            draw.text((text_x + 2, text_y + 2), title, fill=(0, 0, 0, 128), font=font)
-            draw.text((text_x, text_y), title, fill=(255, 255, 255, 200), font=font)
-        except:
-            pass
-        
-        return img
-    
     except Exception as e:
-        # Image d'erreur simple
-        img = Image.new('RGB', (width, height), color=(100, 100, 100))
-        draw = ImageDraw.Draw(img)
-        draw.text((width//2-50, height//2), "Erreur", fill=(255, 255, 255))
-        return img
+        print(f"Erreur Pollinations: {e}")
+        return None, str(e)
 
-def try_huggingface_api(prompt, negative_prompt="", width=512, height=512):
-    """Essaie d'utiliser l'API Hugging Face si disponible"""
+def generate_with_huggingface(prompt, negative_prompt="", model="stabilityai/stable-diffusion-2-1"):
+    """Génère une image avec Hugging Face Inference API"""
     if not config.hf_token:
-        return None
+        return None, "Token Hugging Face requis"
     
     try:
-        API_URL = "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5"
+        API_URL = f"https://api-inference.huggingface.co/models/{model}"
         headers = {"Authorization": f"Bearer {config.hf_token}"}
         
         payload = {
             "inputs": prompt,
             "parameters": {
                 "negative_prompt": negative_prompt,
-                "width": width,
-                "height": height,
-                "num_inference_steps": 20,
-                "guidance_scale": 7.5
+                "num_inference_steps": 25,
+                "guidance_scale": 7.5,
+                "width": 512,
+                "height": 512
             }
         }
         
-        response = requests.post(API_URL, headers=headers, json=payload, timeout=30)
+        print(f"🤗 Génération avec Hugging Face: {prompt}")
+        
+        response = requests.post(API_URL, headers=headers, json=payload, timeout=60)
         
         if response.status_code == 200:
             image = Image.open(io.BytesIO(response.content))
-            return image
+            return image, None
+        elif response.status_code == 503:
+            return None, "Modèle en cours de chargement, réessayez dans 30s"
         else:
-            print(f"Erreur API HF: {response.status_code}")
-            return None
+            return None, f"Erreur API HF: {response.status_code}"
             
     except Exception as e:
-        print(f"Erreur HuggingFace: {e}")
-        return None
+        print(f"Erreur Hugging Face: {e}")
+        return None, str(e)
 
-def generate_image(prompt, negative_prompt="", steps=20, guidance_scale=7.5, width=512, height=512):
-    """Génère une image avec fallback sur génération procédurale"""
+def generate_with_dezgo(prompt, negative_prompt="", width=512, height=512):
+    """Génère une image avec DezGo API (gratuit avec limite)"""
     try:
-        # Tentative avec HuggingFace d'abord
-        if config.hf_token:
-            hf_image = try_huggingface_api(prompt, negative_prompt, width, height)
-            if hf_image:
-                config.using_huggingface = True
-                return hf_image, None
+        API_URL = "https://api.dezgo.com/text2image"
         
-        # Fallback sur génération procédurale
-        config.using_huggingface = False
-        image = generate_procedural_image(prompt, width, height)
-        return image, None
+        data = {
+            'prompt': prompt,
+            'negative_prompt': negative_prompt or "blurry, bad quality, distorted",
+            'model': 'epic_realism',
+            'width': width,
+            'height': height,
+            'guidance': 7.5,
+            'steps': 25,
+            'sampler': 'dpmpp_2m'
+        }
         
+        print(f"🎯 Génération avec DezGo: {prompt}")
+        
+        response = requests.post(API_URL, data=data, timeout=90)
+        
+        if response.status_code == 200:
+            image = Image.open(io.BytesIO(response.content))
+            return image, None
+        else:
+            return None, f"Erreur API DezGo: {response.status_code}"
+            
     except Exception as e:
-        return None, f"Erreur lors de la génération: {str(e)}"
+        print(f"Erreur DezGo: {e}")
+        return None, str(e)
+
+def generate_with_craiyon(prompt):
+    """Génère une image avec Craiyon API (ex-DALL-E mini)"""
+    try:
+        API_URL = "https://api.craiyon.com/v3"
+        
+        payload = {
+            "prompt": prompt,
+            "model": "art",
+            "negative_prompt": "blurry, low quality",
+            "version": "35s5hfwn9n78gb06"
+        }
+        
+        print(f"🖍️ Génération avec Craiyon: {prompt}")
+        
+        response = requests.post(API_URL, json=payload, timeout=120)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if 'images' in data and data['images']:
+                # Craiyon retourne des images en base64
+                img_data = base64.b64decode(data['images'][0])
+                image = Image.open(io.BytesIO(img_data))
+                return image, None
+        
+        return None, "Erreur génération Craiyon"
+            
+    except Exception as e:
+        print(f"Erreur Craiyon: {e}")
+        return None, str(e)
+
+def enhance_prompt(prompt):
+    """Améliore automatiquement le prompt pour de meilleurs résultats"""
+    # Mots-clés pour améliorer la qualité
+    quality_keywords = ", highly detailed, professional, 8k, masterpiece, photorealistic"
+    
+    # Si le prompt est court, on l'enrichit
+    if len(prompt.split()) < 10:
+        enhanced = f"{prompt}, {quality_keywords.strip(', ')}"
+    else:
+        enhanced = f"{prompt}{quality_keywords}"
+    
+    return enhanced
+
+def generate_image(prompt, negative_prompt="", steps=20, guidance_scale=7.5, width=512, height=512, api_choice="auto"):
+    """Génère une image avec gestion multi-API et fallback"""
+    
+    # Amélioration automatique du prompt
+    enhanced_prompt = enhance_prompt(prompt)
+    
+    # Prompt négatif par défaut si vide
+    if not negative_prompt.strip():
+        negative_prompt = "blurry, low quality, distorted, deformed, ugly, bad anatomy"
+    
+    print(f"🚀 Génération: '{enhanced_prompt[:50]}...'")
+    
+    # Liste des APIs à essayer selon le choix
+    if api_choice == "auto":
+        apis_to_try = [
+            ('pollinations', lambda: generate_with_pollinations(enhanced_prompt, width, height)),
+            ('dezgo', lambda: generate_with_dezgo(enhanced_prompt, negative_prompt, width, height)),
+            ('huggingface', lambda: generate_with_huggingface(enhanced_prompt, negative_prompt)),
+            ('craiyon', lambda: generate_with_craiyon(enhanced_prompt))
+        ]
+    elif api_choice == "pollinations":
+        apis_to_try = [('pollinations', lambda: generate_with_pollinations(enhanced_prompt, width, height))]
+    elif api_choice == "huggingface" and config.hf_token:
+        apis_to_try = [('huggingface', lambda: generate_with_huggingface(enhanced_prompt, negative_prompt))]
+    else:
+        apis_to_try = [('pollinations', lambda: generate_with_pollinations(enhanced_prompt, width, height))]
+    
+    # Essai des APIs dans l'ordre
+    last_error = None
+    for api_name, api_func in apis_to_try:
+        try:
+            print(f"⚡ Tentative avec {api_name}...")
+            image, error = api_func()
+            
+            if image and not error:
+                print(f"✅ Succès avec {api_name}!")
+                config.current_api = api_name
+                return image, None, api_name
+            else:
+                print(f"❌ Échec {api_name}: {error}")
+                last_error = error
+                
+        except Exception as e:
+            print(f"💥 Exception {api_name}: {e}")
+            last_error = str(e)
+            continue
+    
+    return None, last_error or "Toutes les APIs ont échoué", "none"
 
 @app.route('/')
 def index():
-    """Page d'accueil"""
     return render_template('index.html')
 
 @app.route('/api/status')
 def status():
-    """API pour vérifier le statut"""
     return jsonify({
         'loaded': True,
         'loading': False,
-        'device': 'CPU',
-        'method': 'HuggingFace API' if config.using_huggingface else 'Génération Procédurale',
-        'hf_available': bool(config.hf_token)
+        'device': 'Cloud APIs',
+        'current_api': config.current_api,
+        'available_apis': {
+            'pollinations': True,
+            'dezgo': True,
+            'huggingface': bool(config.hf_token),
+            'craiyon': True
+        }
     })
 
 @app.route('/api/generate', methods=['POST'])
 def api_generate():
-    """API pour générer une image"""
     try:
         data = request.json
         
@@ -193,72 +237,100 @@ def api_generate():
         if not prompt:
             return jsonify({'error': 'Prompt requis'}), 400
         
+        if len(prompt) < 3:
+            return jsonify({'error': 'Prompt trop court (minimum 3 caractères)'}), 400
+        
         negative_prompt = data.get('negative_prompt', '')
-        steps = min(max(int(data.get('steps', 20)), 10), 50)
+        steps = min(max(int(data.get('steps', 25)), 10), 50)
         guidance_scale = min(max(float(data.get('guidance_scale', 7.5)), 1.0), 20.0)
         width = min(max(int(data.get('width', 512)), 256), 1024)
         height = min(max(int(data.get('height', 512)), 256), 1024)
+        api_choice = data.get('api', 'auto')
         
-        # Ajustement des dimensions pour être multiples de 8
-        width = (width // 8) * 8
-        height = (height // 8) * 8
+        # Dimensions multiples de 64 pour certaines APIs
+        width = (width // 64) * 64
+        height = (height // 64) * 64
         
-        image, error = generate_image(
+        print(f"📝 Requête reçue: {prompt[:30]}...")
+        
+        image, error, used_api = generate_image(
             prompt=prompt,
             negative_prompt=negative_prompt,
             steps=steps,
             guidance_scale=guidance_scale,
             width=width,
-            height=height
+            height=height,
+            api_choice=api_choice
         )
         
         if error:
-            return jsonify({'error': error}), 500
+            return jsonify({
+                'error': f'Erreur génération: {error}',
+                'tried_apis': used_api
+            }), 500
         
         # Conversion en base64
         buffer = io.BytesIO()
-        image.save(buffer, format='PNG', optimize=True)
+        # Optimisation de l'image
+        if image.mode in ('RGBA', 'LA', 'P'):
+            image = image.convert('RGB')
+        
+        image.save(buffer, format='JPEG', quality=85, optimize=True)
         buffer.seek(0)
         
         img_base64 = base64.b64encode(buffer.getvalue()).decode()
         
         return jsonify({
             'success': True,
-            'image': f"data:image/png;base64,{img_base64}",
+            'image': f"data:image/jpeg;base64,{img_base64}",
             'prompt': prompt,
-            'method': 'HuggingFace API' if config.using_huggingface else 'Génération Procédurale',
+            'enhanced_prompt': enhance_prompt(prompt),
+            'api_used': used_api,
             'timestamp': datetime.now().isoformat()
         })
         
     except Exception as e:
+        print(f"💥 Erreur serveur: {e}")
         return jsonify({'error': f'Erreur serveur: {str(e)}'}), 500
 
 @app.route('/api/examples')
 def examples():
-    """API pour obtenir des exemples de prompts"""
     example_prompts = [
-        "A majestic dragon flying over a medieval castle at sunset",
-        "Cyberpunk city with neon lights and flying cars",
-        "Beautiful landscape with mountains and a lake",
-        "Abstract geometric art with vibrant colors",
-        "Futuristic robot in a sci-fi laboratory",
-        "Magical forest with glowing mushrooms",
-        "Ocean waves crashing on a rocky shore",
-        "Space scene with planets and stars",
-        "Vintage car on an old country road",
-        "Modern architecture building at night"
+        "A majestic dragon flying over a medieval castle at golden hour",
+        "Portrait of a cyberpunk warrior with neon-lit city background",
+        "Beautiful serene Japanese garden with cherry blossoms and koi pond",
+        "Futuristic spaceship flying through a colorful nebula in deep space",
+        "Enchanted magical forest with glowing mushrooms and fireflies",
+        "Vintage steampunk airship with brass gears floating in cloudy sky",
+        "Abstract fluid art with vibrant flowing colors and gold accents",
+        "Majestic snow-capped mountain reflected in crystal clear lake",
+        "Gothic cathedral interior with stained glass windows and divine light",
+        "Underwater coral reef scene with tropical fish and sea creatures"
     ]
     
-    return jsonify({'examples': example_prompts})
+    return jsonify({
+        'examples': example_prompts,
+        'tips': [
+            "Soyez descriptif et précis dans vos prompts",
+            "Utilisez des mots-clés artistiques comme 'masterpiece', 'detailed'",
+            "Spécifiez le style: 'photorealistic', 'digital art', 'oil painting'",
+            "Mentionnez l'éclairage: 'golden hour', 'dramatic lighting'",
+            "Ajoutez des détails techniques: '8K', 'sharp focus', 'professional'"
+        ]
+    })
 
 @app.route('/health')
 def health():
-    """Health check pour Render"""
-    return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()})
+    return jsonify({
+        'status': 'healthy', 
+        'timestamp': datetime.now().isoformat(),
+        'apis_status': 'operational'
+    })
 
 if __name__ == '__main__':
-    print("🚀 Démarrage du générateur d'images AI...")
-    print(f"🔧 Token HuggingFace: {'✅ Configuré' if config.hf_token else '❌ Non configuré (mode procédural)'}")
+    print("🚀 Démarrage du Générateur d'Images AI Pro")
+    print("🎨 APIs disponibles: Pollinations, DezGo, Craiyon" + (", Hugging Face" if config.hf_token else ""))
+    print("✨ Mode: Production multi-API avec fallback intelligent")
     
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
