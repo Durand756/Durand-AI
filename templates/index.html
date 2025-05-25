@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DGen AI - Générateur d'Images Ultra-Réalistes</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -14,115 +13,65 @@
         }
 
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #8b5cf6;
-            --accent: #06b6d4;
-            --bg-primary: #0f0f23;
-            --bg-secondary: #1a1b3e;
-            --bg-tertiary: #252659;
+            --bg-dark: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --bg-input: #2a2a2a;
+            --accent: #6366f1;
+            --accent-hover: #5855eb;
             --text-primary: #ffffff;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --border: rgba(255, 255, 255, 0.1);
-            --shadow: rgba(0, 0, 0, 0.25);
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: #3f3f46;
+            --border-accent: #6366f1;
+            --shadow: rgba(0, 0, 0, 0.5);
         }
 
         body {
-            background: var(--bg-primary);
+            background: var(--bg-dark);
             color: var(--text-primary);
-            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
             overflow-x: hidden;
         }
 
-        /* Background Animation */
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.3;
-        }
-
-        .floating-shapes {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-        }
-
-        .shape {
-            position: absolute;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            border-radius: 50%;
-            animation: float 20s infinite ease-in-out;
-            opacity: 0.1;
-        }
-
-        .shape:nth-child(1) {
-            width: 80px;
-            height: 80px;
-            top: 20%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-
-        .shape:nth-child(2) {
-            width: 120px;
-            height: 120px;
-            top: 60%;
-            right: 10%;
-            animation-delay: -5s;
-        }
-
-        .shape:nth-child(3) {
-            width: 60px;
-            height: 60px;
-            top: 80%;
-            left: 20%;
-            animation-delay: -10s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            33% { transform: translateY(-30px) rotate(120deg); }
-            66% { transform: translateY(30px) rotate(240deg); }
-        }
-
-        /* Header */
+        /* Header Chat-like */
         .header {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
             position: sticky;
             top: 0;
             z-index: 100;
-            padding: 1rem 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .status-indicator {
-            display: inline-flex;
+        .status {
+            display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 50px;
+            color: var(--text-secondary);
             font-size: 0.875rem;
-            font-weight: 500;
         }
 
         .status-dot {
@@ -138,96 +87,118 @@
             50% { opacity: 0.5; }
         }
 
-        /* Main Content */
-        .main-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-            min-height: calc(100vh - 140px);
+        /* Main Chat Container */
+        .chat-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
-        .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 2rem;
-            box-shadow: 0 25px 50px -12px var(--shadow);
-            transition: all 0.3s ease;
-        }
-
-        .glass-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 32px 64px -12px var(--shadow);
-        }
-
-        .form-floating {
-            position: relative;
-        }
-
-        .form-control, .form-select {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid var(--border);
+        /* Message Bubbles */
+        .message {
+            background: var(--bg-card);
             border-radius: 16px;
-            color: var(--text-primary);
-            padding: 1rem;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            animation: slideIn 0.3s ease-out;
         }
 
-        .form-control:focus, .form-select:focus {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .message-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent);
+            color: white;
+            font-size: 0.875rem;
+        }
+
+        .message-title {
+            font-weight: 600;
             color: var(--text-primary);
         }
 
-        .form-control::placeholder {
-            color: var(--text-muted);
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1rem;
         }
 
         .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
             color: var(--text-secondary);
             font-weight: 500;
-            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            resize: none;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--border-accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 80px;
         }
 
         /* Modern Button */
-        .btn-generate {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        .btn-primary {
+            width: 100%;
+            background: var(--accent);
             border: none;
-            border-radius: 16px;
-            padding: 1rem 2rem;
-            font-weight: 600;
-            font-size: 1.1rem;
+            border-radius: 12px;
+            padding: 1rem;
             color: white;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
-        .btn-generate::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
         }
 
-        .btn-generate:hover::before {
-            left: 100%;
-        }
-
-        .btn-generate:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 40px -12px rgba(99, 102, 241, 0.4);
-        }
-
-        .btn-generate:disabled {
+        .btn-primary:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
@@ -235,95 +206,75 @@
 
         /* Advanced Options */
         .advanced-toggle {
-            background: none;
-            border: 1px solid var(--border);
+            width: 100%;
+            background: transparent;
+            border: 1px dashed var(--border);
             border-radius: 12px;
-            padding: 0.75rem 1rem;
+            padding: 0.875rem;
             color: var(--text-secondary);
             cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
         }
 
         .advanced-toggle:hover {
-            border-color: var(--primary);
+            border-color: var(--accent);
             color: var(--text-primary);
         }
 
         .advanced-options {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-top: 1rem;
-            opacity: 0;
-            max-height: 0;
             overflow: hidden;
+            max-height: 0;
+            opacity: 0;
             transition: all 0.3s ease;
         }
 
         .advanced-options.show {
+            max-height: 300px;
             opacity: 1;
-            max-height: 500px;
+            margin-bottom: 1rem;
         }
 
-        /* Range Sliders */
-        .range-container {
-            position: relative;
-            margin: 1rem 0;
-        }
-
-        .form-range {
-            width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            outline: none;
-            -webkit-appearance: none;
-        }
-
-        .form-range::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
         }
 
         /* Result Area */
         .result-area {
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--bg-input);
             border: 2px dashed var(--border);
-            border-radius: 20px;
-            padding: 3rem 2rem;
+            border-radius: 16px;
+            padding: 2rem;
             text-align: center;
-            min-height: 400px;
+            min-height: 200px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
-            position: relative;
         }
 
         .result-area.has-image {
-            border: 2px solid var(--primary);
+            border-color: var(--accent);
             background: rgba(99, 102, 241, 0.05);
         }
 
         .generated-image {
             max-width: 100%;
-            max-height: 500px;
-            border-radius: 16px;
+            height: auto;
+            border-radius: 12px;
             box-shadow: 0 20px 40px -12px var(--shadow);
-            animation: fadeInScale 0.8s ease;
+            animation: imageAppear 0.5s ease-out;
         }
 
-        @keyframes fadeInScale {
+        @keyframes imageAppear {
             from {
                 opacity: 0;
-                transform: scale(0.9);
+                transform: scale(0.95);
             }
             to {
                 opacity: 1;
@@ -331,19 +282,12 @@
             }
         }
 
-        /* Loading Animation */
-        .loading-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .modern-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top: 3px solid var(--primary);
+        /* Loading Spinner */
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--accent);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -353,172 +297,141 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Examples */
-        .example-item {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 0.5rem;
-        }
-
-        .example-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--primary);
-            transform: translateX(8px);
-        }
-
-        /* Mobile Modal */
-        .mobile-result-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-primary);
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .mobile-result-modal.show {
+        /* Examples Section */
+        .examples-section {
             display: block;
         }
 
-        .modal-header-mobile {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
-            padding: 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 1001;
-        }
-
-        .modal-content-mobile {
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 1.5rem;
-            padding: 0.5rem;
-            border-radius: 8px;
+        .examples-toggle {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.875rem;
+            color: var(--text-secondary);
             cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .examples-toggle:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .examples-list {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
             transition: all 0.3s ease;
         }
 
-        .close-modal:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .examples-list.show {
+            max-height: 400px;
+            opacity: 1;
+        }
+
+        .example-item {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.875rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .example-item:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+            background: rgba(99, 102, 241, 0.05);
         }
 
         /* Download Button */
-        .download-btn {
-            background: linear-gradient(135deg, var(--accent), var(--primary));
+        .btn-download {
+            background: var(--accent);
             border: none;
-            border-radius: 12px;
-            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
             color: white;
             font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
             margin-top: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -8px rgba(6, 182, 212, 0.4);
-        }
-
-        /* Footer */
-        .footer {
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border);
-            padding: 2rem 0;
-            text-align: center;
-            margin-top: 4rem;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-
-        .creator-badge {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-            font-weight: 500;
+        }
+
+        .btn-download:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
         }
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
-            .main-container {
+            .examples-section {
+                display: block;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-container {
+                margin: 1rem auto;
+                gap: 1rem;
+            }
+
+            .message {
                 padding: 1rem;
             }
 
-            .glass-card {
-                padding: 1.5rem;
-                border-radius: 20px;
-            }
-
-            .logo {
-                font-size: 1.5rem;
-            }
-
             .result-area {
-                min-height: 200px;
-                padding: 2rem 1rem;
-            }
-
-            .mobile-only {
-                display: block !important;
-            }
-
-            .desktop-only {
-                display: none !important;
+                min-height: 150px;
+                padding: 1.5rem;
             }
         }
 
         @media (min-width: 769px) {
-            .mobile-only {
-                display: none !important;
+            .examples-section {
+                display: block;
             }
+        }
 
-            .desktop-only {
-                display: block !important;
-            }
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
         }
     </style>
 </head>
 <body>
-    <!-- Background Animation -->
-    <div class="bg-animation">
-        <div class="floating-shapes">
-            <div class="shape"></div>
-            <div class="shape"></div>
-            <div class="shape"></div>
-        </div>
-    </div>
-
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="header-content">
                 <div class="logo">
-                    <i class="fas fa-magic me-2"></i>
-                    DGen AI
+                    <i class="fas fa-magic"></i> DGen AI
                 </div>
-                <div class="status-indicator" id="status-indicator">
+                <div class="status" id="status">
                     <div class="status-dot"></div>
                     <span>Prêt</span>
                 </div>
@@ -526,215 +439,122 @@
         </div>
     </header>
 
-    <!-- Main Content -->
-    <div class="main-container">
-        <div class="row g-4">
-            <!-- Generation Panel -->
-            <div class="col-lg-6">
-                <div class="glass-card">
-                    <h2 class="mb-4 d-flex align-items-center gap-2">
-                        <i class="fas fa-palette text-primary"></i>
-                        Création d'Image
-                    </h2>
-                    
-                    <form id="generation-form">
-                        <!-- Main Prompt -->
-                        <div class="mb-3">
-                            <label class="form-label">Description de l'image (préférence en anglais)</label>
-                            <textarea 
-                                class="form-control" 
-                                id="prompt" 
-                                maxlength="2000"
-                                rows="3" 
-                                placeholder="Décrivez votre image en détail préférence en anglais..."
-                                required
-                            ></textarea>
-                        </div>
+    <!-- Chat Container -->
+    <div class="chat-container">
+        <!-- Generation Message -->
+        <div class="message">
+            <div class="message-header">
+                <div class="message-icon">
+                    <i class="fas fa-palette"></i>
+                </div>
+                <div class="message-title">Création d'Image</div>
+            </div>
+            
+            <form id="generation-form">
+                <div class="form-group">
+                    <label class="form-label">Description de l'image (préférence en anglais)</label>
+                    <textarea 
+                        class="form-textarea" 
+                        id="prompt" 
+                        placeholder="Décrivez votre image en détail..."
+                        maxlength="2000"
+                        required
+                    ></textarea>
+                </div>
 
-                        <!-- Negative Prompt -->
-                        <div style="display:none" class="mb-3">
-                            <label class="form-label">Éléments à éviter (optionnel)</label>
-                            <textarea 
-                                class="form-control" 
-                                id="negative-prompt" 
-                                rows="2" 
-                                placeholder="Ce que vous ne voulez pas voir..."
-                            ></textarea>
-                        </div>
+                <div class="form-group">
+                    <label class="form-label">Mode de génération</label>
+                    <select class="form-select" id="api-choice">
+                        <option value="auto" selected>🎯 Automatique (Recommandé)</option>
+                        <option value="pollinations">⚡ Rapide</option>
+                        <option value="huggingface">🎨 Haute Qualité</option>
+                    </select>
+                </div>
 
-                        <!-- API Selection -->
-                        <div class="mb-4">
-                            <label class="form-label">Mode de génération</label>
-                            <select class="form-select" id="api-choice">
-                                <option value="auto" selected>🎯 Automatique (Recommandé)</option>
-                                <option value="pollinations">⚡ Rapide</option>
-                                <option value="huggingface">🎨 Haute Qualité</option>
+                <button type="button" class="advanced-toggle" onclick="toggleAdvanced()">
+                    <span><i class="fas fa-cog"></i> Options avancées</span>
+                    <i class="fas fa-chevron-down" id="advanced-chevron"></i>
+                </button>
+
+                <div class="advanced-options" id="advanced-options">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Largeur</label>
+                            <select class="form-select" id="width">
+                                <option value="512" selected>512px</option>
+                                <option value="768">768px</option>
+                                <option value="1024">1024px</option>
                             </select>
                         </div>
-
-                        <!-- Advanced Options Toggle -->
-                        <button type="button" class="advanced-toggle mb-3" onclick="toggleAdvanced()">
-                            <i class="fas fa-cog me-2"></i>
-                            Options avancées
-                            <i class="fas fa-chevron-down ms-auto" id="advanced-chevron"></i>
-                        </button>
-
-                        <!-- Advanced Options -->
-                        <div class="advanced-options" id="advanced-options">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                   <div style="display:none" class="range-container">
-                                        <label class="form-label d-flex justify-content-between">
-                                            <span>Étapes</span>
-                                            <span id="steps-value">25</span>
-                                        </label>
-                                        <input type="range" class="form-range" id="steps" min="10" max="50" value="25">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div style="display:none" class="range-container">
-                                        <label class="form-label d-flex justify-content-between">
-                                            <span>Guidance</span>
-                                            <span id="guidance-value">7.5</span>
-                                        </label>
-                                        <input type="range" class="form-range" id="guidance" min="1" max="20" step="0.5" value="7.5">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Largeur</label>
-                                    <select class="form-select" id="width">
-                                        <option value="512" selected>512px</option>
-                                        <option value="768">768px</option>
-                                        <option value="1024">1024px</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Hauteur</label>
-                                    <select class="form-select" id="height">
-                                        <option value="512" selected>512px</option>
-                                        <option value="768">768px</option>
-                                        <option value="1024">1024px</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn-generate" id="generate-btn" disabled>
-                            <i class="fas fa-magic me-2"></i>
-                            Générer l'Image
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Examples -->
-                <div class="glass-card mt-4">
-                    <h3 class="mb-3 d-flex align-items-center gap-2">
-                        <i class="fas fa-lightbulb text-warning"></i>
-                        Exemples d'inspiration
-                    </h3>
-                    <div id="examples-container">
-                        <div class="loading-container">
-                            <div class="modern-spinner"></div>
-                            <p class="text-muted">Chargement des exemples...</p>
+                        <div class="form-group">
+                            <label class="form-label">Hauteur</label>
+                            <select class="form-select" id="height">
+                                <option value="512" selected>512px</option>
+                                <option value="768">768px</option>
+                                <option value="1024">1024px</option>
+                            </select>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Result Panel - Desktop -->
-            <div class="col-lg-6 desktop-only">
-                <div class="glass-card">
-                    <h2 class="mb-4 d-flex align-items-center gap-2">
-                        <i class="fas fa-image text-accent"></i>
-                        Résultat
-                    </h2>
-                    
-                    <div class="result-area" id="image-result">
-                        <div class="text-center">
-                            <i class="fas fa-image fa-3x mb-3 text-muted"></i>
-                            <p class="text-muted mb-0">Votre création apparaîtra ici</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Result Section - Mobile -->
-            <div class="col-12 mobile-only">
-                <div class="glass-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h3 class="mb-0 d-flex align-items-center gap-2">
-                            <i class="fas fa-image text-accent"></i>
-                            Résultat
-                        </h3>
-                        <button class="btn btn-sm btn-outline-light" onclick="openMobileModal()" id="mobile-view-btn" style="display: none;">
-                            <i class="fas fa-expand"></i>
-                            Voir en grand
-                        </button>
-                    </div>
-                    
-                    <div class="result-area" id="image-result-mobile">
-                        <div class="text-center">
-                            <i class="fas fa-image fa-2x mb-2 text-muted"></i>
-                            <p class="text-muted mb-0 small">Votre création apparaîtra ici</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Mobile Modal -->
-    <div class="mobile-result-modal" id="mobile-modal">
-        <div class="modal-header-mobile">
-            <div class="d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">Image générée</h4>
-                <button class="close-modal" onclick="closeMobileModal()">
-                    <i class="fas fa-times"></i>
+                <button type="submit" class="btn-primary" id="generate-btn" disabled>
+                    <i class="fas fa-magic"></i>
+                    Générer l'Image
                 </button>
+            </form>
+        </div>
+
+        <!-- Examples Section -->
+        <div class="message examples-section">
+            <div class="message-header">
+                <div class="message-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div class="message-title">Inspirations</div>
+            </div>
+            
+            <button type="button" class="examples-toggle" onclick="toggleExamples()">
+                <span>Voir les exemples d'inspiration</span>
+                <i class="fas fa-chevron-down" id="examples-chevron"></i>
+            </button>
+            
+            <div class="examples-list" id="examples-list">
+                <div style="text-align: center; padding: 2rem;">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 1rem; color: var(--text-muted);">Chargement...</p>
+                </div>
             </div>
         </div>
-        <div class="modal-content-mobile" id="modal-image-content">
-            <!-- Content will be inserted here -->
+
+        <!-- Result Message -->
+        <div class="message">
+            <div class="message-header">
+                <div class="message-icon">
+                    <i class="fas fa-image"></i>
+                </div>
+                <div class="message-title">Résultat</div>
+            </div>
+            
+            <div class="result-area" id="result-area">
+                <div>
+                    <i class="fas fa-image" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                    <p style="color: var(--text-muted);">Votre création apparaîtra ici</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="creator-badge">
-                <i class="fas fa-code text-primary"></i>
-                <span>Créé par <strong>Durand</strong></span>
-            </div>
-            <p class="text-muted mt-3 mb-0 small">
-                © 2024 DGen AI. Générateur d'images alimenté par l'intelligence artificielle.
-            </p>
-        </div>
-    </footer>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // État de l'application
         let modelLoaded = false;
         let generating = false;
         let currentImageData = null;
 
-        // Éléments DOM
-        const statusIndicator = document.getElementById('status-indicator');
+        const statusEl = document.getElementById('status');
         const generateBtn = document.getElementById('generate-btn');
         const generationForm = document.getElementById('generation-form');
-        const imageResult = document.getElementById('image-result');
-        const imageResultMobile = document.getElementById('image-result-mobile');
-        const stepsSlider = document.getElementById('steps');
-        const guidanceSlider = document.getElementById('guidance');
-        const stepsValue = document.getElementById('steps-value');
-        const guidanceValue = document.getElementById('guidance-value');
-        const examplesContainer = document.getElementById('examples-container');
-        const mobileModal = document.getElementById('mobile-modal');
-        const modalImageContent = document.getElementById('modal-image-content');
-        const mobileViewBtn = document.getElementById('mobile-view-btn');
+        const resultArea = document.getElementById('result-area');
+        const examplesList = document.getElementById('examples-list');
 
-        // Fonctions utilitaires
         function toggleAdvanced() {
             const options = document.getElementById('advanced-options');
             const chevron = document.getElementById('advanced-chevron');
@@ -748,20 +568,24 @@
             }
         }
 
-        function openMobileModal() {
-            if (currentImageData) {
-                modalImageContent.innerHTML = currentImageData.modalContent;
-                mobileModal.classList.add('show');
-                document.body.style.overflow = 'hidden';
+        function toggleExamples() {
+            const list = document.getElementById('examples-list');
+            const chevron = document.getElementById('examples-chevron');
+            
+            if (list.classList.contains('show')) {
+                list.classList.remove('show');
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                list.classList.add('show');
+                chevron.style.transform = 'rotate(180deg)';
             }
         }
 
-        function closeMobileModal() {
-            mobileModal.classList.remove('show');
-            document.body.style.overflow = 'auto';
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function downloadImage(dataUrl, prompt) {
+        function downloadImage(dataUrl) {
             const link = document.createElement('a');
             link.href = dataUrl;
             link.download = `dgen-ai-${Date.now()}.png`;
@@ -770,16 +594,6 @@
             document.body.removeChild(link);
         }
 
-        // Mise à jour des valeurs des sliders
-        stepsSlider.addEventListener('input', () => {
-            stepsValue.textContent = stepsSlider.value;
-        });
-
-        guidanceSlider.addEventListener('input', () => {
-            guidanceValue.textContent = guidanceSlider.value;
-        });
-
-        // Vérification du statut
         async function checkStatus() {
             try {
                 const response = await fetch('/api/status');
@@ -787,45 +601,43 @@
                 
                 if (data.loaded && !modelLoaded) {
                     modelLoaded = true;
-                    statusIndicator.innerHTML = '<div class="status-dot"></div><span>Prêt</span>';
+                    statusEl.innerHTML = '<div class="status-dot"></div><span>Prêt</span>';
                     generateBtn.disabled = false;
                 } else if (data.loading) {
-                    statusIndicator.innerHTML = '<div class="modern-spinner" style="width: 12px; height: 12px; border-width: 2px;"></div><span>Chargement...</span>';
+                    statusEl.innerHTML = '<div class="spinner" style="width: 12px; height: 12px; border-width: 2px;"></div><span>Chargement...</span>';
                 }
             } catch (error) {
-                statusIndicator.innerHTML = '<i class="fas fa-exclamation-triangle text-warning"></i><span>Erreur</span>';
+                statusEl.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i><span>Erreur</span>';
             }
         }
 
-        // Chargement des exemples
         async function loadExamples() {
             try {
                 const response = await fetch('/api/examples');
                 const data = await response.json();
                 
-                examplesContainer.innerHTML = '';
+                examplesList.innerHTML = '';
                 data.examples.forEach(example => {
                     const div = document.createElement('div');
                     div.className = 'example-item';
-                    div.innerHTML = `<i class="fas fa-quote-left me-2 text-muted"></i>${example}`;
+                    div.textContent = example;
                     div.addEventListener('click', () => {
                         document.getElementById('prompt').value = example;
+                        toggleExamples(); // Fermer les exemples
+                        scrollToTop(); // Scroll vers le haut
                     });
-                    examplesContainer.appendChild(div);
+                    examplesList.appendChild(div);
                 });
             } catch (error) {
-                examplesContainer.innerHTML = '<p class="text-danger">Erreur lors du chargement des exemples</p>';
+                examplesList.innerHTML = '<p style="color: #ef4444; text-align: center;">Erreur de chargement</p>';
             }
         }
 
-        // Génération d'image
         async function generateImage(formData) {
             try {
                 const response = await fetch('/api/generate', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
 
@@ -833,65 +645,33 @@
 
                 if (data.success) {
                     const imageContent = `
-                        <div class="text-center">
+                        <div style="text-align: center;">
                             <img src="${data.image}" alt="Image générée" class="generated-image">
-                            <div class="mt-3">
-                                <button class="download-btn" onclick="downloadImage('${data.image}', '${data.prompt}')">
-                                    <i class="fas fa-download me-2"></i>Télécharger
-                                </button>
-                            </div>
+                            <button class="btn-download" onclick="downloadImage('${data.image}')">
+                                <i class="fas fa-download"></i>Télécharger
+                            </button>
                         </div>
                     `;
 
-                    const modalContent = `
-                        <div class="text-center">
-                            <img src="${data.image}" alt="Image générée" style="max-width: 100%; height: auto; border-radius: 16px; box-shadow: 0 20px 40px -12px rgba(0,0,0,0.3);">
-                            <div class="mt-4">
-                                <button class="download-btn" onclick="downloadImage('${data.image}', '${data.prompt}')">
-                                    <i class="fas fa-download me-2"></i>Télécharger l'image
-                                </button>
-                            </div>
-                            <p class="text-muted mt-3 small">"${data.prompt}"</p>
-                        </div>
-                    `;
-
-                    // Desktop
-                    imageResult.innerHTML = imageContent;
-                    imageResult.classList.add('has-image');
-
-                    // Mobile
-                    imageResultMobile.innerHTML = imageContent;
-                    imageResultMobile.classList.add('has-image');
-                    mobileViewBtn.style.display = 'block';
-
-                    // Stocker les données pour le modal
-                    currentImageData = {
-                        image: data.image,
-                        prompt: data.prompt,
-                        modalContent: modalContent
-                    };
+                    resultArea.innerHTML = imageContent;
+                    resultArea.classList.add('has-image');
+                    currentImageData = { image: data.image, prompt: data.prompt };
 
                 } else {
                     throw new Error(data.error || 'Erreur inconnue');
                 }
             } catch (error) {
-                const errorContent = `
-                    <div class="text-center text-danger">
-                        <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
-                        <p>Erreur</p>
-                        <small class="text-muted">Veuillez réessayer dans quelques instants</small>
+                resultArea.innerHTML = `
+                    <div style="color: #ef4444; text-align: center;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Erreur de génération</p>
+                        <small style="color: var(--text-muted);">Veuillez réessayer</small>
                     </div>
                 `;
-                
-                imageResult.innerHTML = errorContent;
-                imageResult.classList.remove('has-image');
-                imageResultMobile.innerHTML = errorContent;
-                imageResultMobile.classList.remove('has-image');
-                mobileViewBtn.style.display = 'none';
+                resultArea.classList.remove('has-image');
             }
         }
 
-        // Gestion du formulaire
         generationForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -899,99 +679,39 @@
 
             generating = true;
             generateBtn.disabled = true;
-            generateBtn.innerHTML = '<div class="modern-spinner" style="width: 20px; height: 20px; border-width: 2px; display: inline-block; margin-right: 8px;"></div>Génération...';
+            generateBtn.innerHTML = '<div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>Génération...';
 
-            // Affichage du loading
-            const loadingContent = `
-                <div class="loading-container">
-                    <div class="modern-spinner"></div>
-                    <p class="mb-2">🎨 Création en cours...</p>
-                    <small class="text-muted">Cela peut prendre quelques instants</small>
+            resultArea.innerHTML = `
+                <div style="text-align: center;">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 1rem; color: var(--text-secondary);">🎨 Création en cours...</p>
+                    <small style="color: var(--text-muted);">Patientez quelques instants</small>
                 </div>
             `;
-            
-            imageResult.innerHTML = loadingContent;
-            imageResult.classList.remove('has-image');
-            imageResultMobile.innerHTML = loadingContent;
-            imageResultMobile.classList.remove('has-image');
-            mobileViewBtn.style.display = 'none';
+            resultArea.classList.remove('has-image');
 
-            // Préparation des données
             const formData = {
                 prompt: document.getElementById('prompt').value,
-                negative_prompt: document.getElementById('negative-prompt').value,
-                steps: parseInt(stepsSlider.value),
-                guidance_scale: parseFloat(guidanceSlider.value),
                 width: parseInt(document.getElementById('width').value),
                 height: parseInt(document.getElementById('height').value),
                 api: document.getElementById('api-choice').value
             };
 
-            // Génération
             await generateImage(formData);
 
-            // Réactivation du bouton
             generating = false;
             generateBtn.disabled = false;
-            generateBtn.innerHTML = '<i class="fas fa-magic me-2"></i>Générer l\'Image';
-        });
-
-        // Fermeture du modal mobile avec Escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && mobileModal.classList.contains('show')) {
-                closeMobileModal();
-            }
-        });
-
-        // Fermeture du modal en cliquant à l'extérieur
-        mobileModal.addEventListener('click', (e) => {
-            if (e.target === mobileModal) {
-                closeMobileModal();
-            }
+            generateBtn.innerHTML = '<i class="fas fa-magic"></i>Générer l\'Image';
         });
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', () => {
-            // Le générateur est toujours prêt
             modelLoaded = true;
             generateBtn.disabled = false;
-            
             checkStatus();
             loadExamples();
-            
-            // Vérification périodique du statut
             setInterval(checkStatus, 5000);
-
-            // Animation d'entrée
-            document.querySelectorAll('.glass-card').forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-                setTimeout(() => {
-                    card.style.transition = 'all 0.6s ease';
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, index * 200);
-            });
         });
-
-        // Smooth scroll pour mobile
-        function scrollToResult() {
-            if (window.innerWidth <= 768) {
-                document.getElementById('image-result-mobile').scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            }
-        }
-
-        // Auto-scroll après génération sur mobile
-        const originalGenerateImage = generateImage;
-        generateImage = async function(formData) {
-            await originalGenerateImage(formData);
-            if (window.innerWidth <= 768 && currentImageData) {
-                setTimeout(scrollToResult, 500);
-            }
-        };
     </script>
 </body>
 </html>
